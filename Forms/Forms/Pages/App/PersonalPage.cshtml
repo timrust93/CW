@@ -1,0 +1,73 @@
+﻿@page
+@using Syncfusion.EJ2.Buttons
+@using Syncfusion.EJ2.Navigations;
+@model PersonalPageModel
+@{
+}
+
+
+<ejs-tab id="ej2Tab2">
+    <e-tab-tabitems>
+        <e-tab-tabitem>
+            <e-content-template>
+                <div>
+                    <div class="e-tab-header">
+                        <div>Templates</div>
+                        <div>Calendar</div>
+                    </div>
+                    <div class="e-content">
+                        <div>
+                            <ejs-grid id="TemplateGrid" dataSource="@Model.Templates" allowSorting="true" allowSelection="true">
+                                <e-grid-editSettings></e-grid-editSettings>
+                                <e-grid-columns>
+                                    <e-grid-column field="Title"></e-grid-column>
+                                    <e-grid-column field="Description"></e-grid-column>
+                                    <e-grid-column template="#templateEdit"></e-grid-column>
+                                    <e-grid-column template="#temlateDelete"></e-grid-column>
+                                </e-grid-columns>
+                            </ejs-grid>
+                        </div>
+                        <div>
+                            <ejs-calendar id="cal"></ejs-calendar>
+                        </div>
+                    </div>
+                </div>
+            </e-content-template>
+        </e-tab-tabitem>
+    </e-tab-tabitems>
+</ejs-tab>
+
+
+
+<script id="templateEdit" type="text/x-template">
+    <button class="btn btn-outline-primary btn-sm" onclick="onSelect()">
+        Edit
+    </button>
+</script>
+
+<script id="temlateDelete" type="text/x-template">
+    <button class="btn btn-outline-danger btn-sm" onclick="onDelete()">
+        Delete
+    </button>
+</script>
+
+
+
+<style>
+    .e-grid .e-focused:not(.e-menu-item):not(.e-editedbatchcell) {
+        box-shadow: 0 0 0 0px  green inset;
+    }
+    
+    .e-grid .e-focus button {
+        outline: none !important;
+        box-shadow: none !important;
+    }
+</style>
+
+<script>
+    function onSelect(args)
+    {
+        alert("s");
+        console.log("selected");
+    }
+</script>
