@@ -1,0 +1,25 @@
+﻿@page
+@model CreateTemplateModel
+@{
+}
+
+<div>
+    <form id="create" method="post">
+        <label asp-for="TemplateInit.Title" class="form-label">Title</label>
+        <input asp-for="TemplateInit.Title" class="form-control" />
+        <span asp-validation-for="TemplateInit.Title" class="text-danger"></span>
+        <div>
+            <label asp-for="TemplateInit.Description" class="form-label">Description</label>
+            <textarea asp-for="TemplateInit.Description" class="form-control" rows="5"></textarea>
+            <span asp-validation-for="TemplateInit.Description" class="text-danger"></span>
+        </div>        
+        <br />
+        <button id="create-submit" type="submit" class="btn btn-primary" style="float:right">Create</button>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
+
+

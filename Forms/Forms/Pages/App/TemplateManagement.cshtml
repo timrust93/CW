@@ -1,0 +1,168 @@
+﻿@page
+@model TemplateManagementModel
+@{
+}
+
+<div>
+    Here you manage template
+</div>
+
+<ul id="sortable">
+    @{
+        for (int i = 0; i < Model.TestQuestionList.Count; i++)
+        {
+            <li>
+                <form id="@($"form{i}")" method="POST" asp-page-handler="Save">
+                        <div>
+                            <p>Item 1</p>
+                            <input asp-for="TestQuestionList[i].Title" type="text" class="form-control" />
+                            <span asp-validation-for="TestQuestionList[i].Title" class="text-danger"></span>
+                            <div>
+                                <button type="button" data="@i" onclick="onClick(this)">Button 1</button>
+                            </div>
+                                            
+                        </div>
+                    </form>          
+            </li>            
+        }
+    }
+    
+</ul>
+<button type="button" onclick="addNewQuestion()">Add New Question</button>
+
+
+
+
+@section Scripts
+{
+    <partial name="_ValidationScriptsPartial" />
+    <script src="https://code.jquery.com/ui/1.13.0/jquery-ui.min.js"></script>
+    <script>
+        $(function () {
+            $('#sortable').sortable();
+        });
+    </script>
+
+    <script>
+        $(document).ready(function () {
+
+            var forms = document.querySelector('#sortable').querySelectorAll("form");
+            for (i = 0; i < forms.length; i++)
+            {
+                console.log(forms[i]);
+                $(forms[i]).on('keydown', function (e) {
+                    if (e.key === "Enter") {
+                        e.preventDefault(); // Prevent form submission
+                        return false;
+                    }
+                });
+            }
+        });
+
+
+        var questionIndex = @Model.TestQuestionList.Count;
+        function addNewQuestion() {
+            var $lastForm = $("#sortable form").last();
+            var $newForm = $lastForm.clone();
+
+            $newForm.attr("id", `form${questionIndex}`);
+
+            $newForm.find("input, span").each(function () {
+                var $input = $(this);
+
+                if ($input.is("input")) {
+                    // Update name attribute
+                    var nameAttr = $input.attr("name");
+                    if (nameAttr) {
+                        // Replace the index in the name attribute
+                        $input.attr("name", nameAttr.replace(/\[\d+\]/, `[${questionIndex}]`));
+                        $input.val(""); // Clear input value
+                    }
+                }
+
+                if ($input.is("span")) {
+                    // Clear validation messages
+                    $input.text("");
+                }
+            });
+
+            
+
+
+            // var newQuestion = `
+            //         <li>
+            //             <form id="form${questionIndex}" method="POST" asp-page-handler="Save">
+            //                 <div>
+            //                     <p>Item ${questionIndex + 1}</p>
+            //                     <input name="TestQuestionList[${questionIndex}].Title" type="text" class="form-control" />
+            //                     <span class="text-danger" data-valmsg-for="TestQuestionList[${questionIndex}].Title"></span>
+            //                     <button type="button" data-index="${questionIndex}" onclick="onClick(this)">Button</button>
+            //                 </div>
+            //             </form>
+            //         </li>
+            // `;
+            var li = document.createElement("li");
+            li.appendChild($newForm[0]);
+            $('#sortable').append(li);
+            questionIndex++;
+            $.validator.unobtrusive.parse($newForm);
+        }
+
+
+
+
+        function onClick(args)
+        {
+            
+            // console.log('button clicked');
+            // console.log(args.getAttribute('data'));
+            
+            var id = args.getAttribute('data');
+            var form = $(`#form${id}`);
+
+            var data = form.serializeArray();
+            console.log("Form data: ", data);
+            var mapped = data.map((x) => {
+                let name = x.name.substring(x.name.lastIndexOf('.') + 1);                
+                return { name : name, value : x.value }             
+            });
+
+            // fetch("/TemplateManagement/handler?" {
+            //     method: 'POST',
+            //     headers: {
+            //         'Conent-Type':'application/json'
+            //     }
+            //     body: JSON
+            // });
+
+            
+            console.log("mapped: ", mapped);
+            
+            console.log("form valid: " + form.valid());
+        }
+    </script>
+}
+
+
+<style>
+    ul#sortable {
+    list-style-type: none; /* Removes the dots */
+    margin: 0;
+    padding: 0;
+    }
+
+    ul#sortable li {
+    margin: 5px;
+    padding: 10px; /* Space inside the li */
+    border: 1px solid #ddd; /* Add a border to make items clear */
+    background-color: #f9f9f9;
+    cursor: grab; /* Change cursor to indicate draggable */
+    }
+
+    ul#sortable li:active {
+    cursor: grabbing;
+    }
+
+    ul#sortable li div {
+    }
+</style>

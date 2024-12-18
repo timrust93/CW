@@ -3,6 +3,7 @@
 @using Syncfusion.EJ2.Navigations;
 @model PersonalPageModel
 @{
+
 }
 
 
@@ -13,11 +14,11 @@
                 <div>
                     <div class="e-tab-header">
                         <div>Templates</div>
-                        <div>Calendar</div>
+                        <div>Calendar</div>                              
                     </div>
                     <div class="e-content">
                         <div>
-                            <ejs-grid id="TemplateGrid" dataSource="@Model.Templates" allowSorting="true" allowSelection="true">
+                            <ejs-grid id="TemplateGrid" dataSource="@Model.Templates" allowSorting="true" allowSelection="false">
                                 <e-grid-editSettings></e-grid-editSettings>
                                 <e-grid-columns>
                                     <e-grid-column field="Title"></e-grid-column>
@@ -26,6 +27,11 @@
                                     <e-grid-column template="#temlateDelete"></e-grid-column>
                                 </e-grid-columns>
                             </ejs-grid>
+                            <div>
+                                <a class="btn btn-outline-primary btn-sm" asp-page="CreateTemplate">
+                                    Create new template
+                                </a>
+                            </div>
                         </div>
                         <div>
                             <ejs-calendar id="cal"></ejs-calendar>
@@ -37,19 +43,42 @@
     </e-tab-tabitems>
 </ejs-tab>
 
+<form id="goToTemplateForm" asp-antiforgery="true" action="TemplateManagement" method="QUERY">
+    <input type="hidden" name="id" id="goToTemplateFormId">
+</form>
 
 
 <script id="templateEdit" type="text/x-template">
-    <button class="btn btn-outline-primary btn-sm" onclick="onSelect()">
-        Edit
+    <button class="btn btn-outline-primary btn-sm" onclick="onEdit(this)">
+        View
     </button>
 </script>
 
 <script id="temlateDelete" type="text/x-template">
-    <button class="btn btn-outline-danger btn-sm" onclick="onDelete()">
+    <button class="btn btn-outline-danger btn-sm" onclick="onDelete(this)">
         Delete
     </button>
 </script>
+
+
+
+<div class="modal" tabindex="-1" id="exampleModalLong">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Delete template</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="deleteConfirm" class="btn btn-primary" data-bs-dismiss="modal">Yes</button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">No</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 
 
@@ -65,9 +94,46 @@
 </style>
 
 <script>
-    function onSelect(args)
+    function getGridRowOfButton(target, gridId)
     {
-        alert("s");
-        console.log("selected");
+        var rowElement = target.closest('tr');
+        var rowIndex = parseInt(rowElement.getAttribute('data-rowindex'), 10);
+        const grid = document.querySelector(gridId).ej2_instances[0];
+        let gridRow = grid.getRowsObject()[rowIndex];
+        return gridRow;
+    }
+
+    function onEdit(target) {
+        let gridRow = getGridRowOfButton(target, "#TemplateGrid");
+        var rowData = gridRow.data.Id;
+        console.log(rowData);
+
+        window.location.href = `TemplateManagement?id=${rowData}`;
+        return;
+        
+        var form = document.getElementById('goToTemplateForm');
+        document.getElementById('goToTemplateFormId').value = rowData;
+        form.action = "TemplateManagement";
+        form.submit();
+    }
+
+    function onDelete(target)
+    {
+        var rowData = getGridRowOfButton(target, "#TemplateGrid");
+        console.log(rowData);
+
+        var modal = $("#exampleModalLong");         
+        const myModal = document.getElementById('exampleModalLong')
+        myModal.addEventListener('hidden.bs.modal', event => {
+
+            var buttonId = document.activeElement.getAttribute('id');
+            if (buttonId == 'deleteConfirm') {
+                console.log("delete confirmed");
+            }
+            const newModal = myModal.cloneNode(true);
+            myModal.parentNode.replaceChild(newModal, myModal);                       
+        });
+
+        modal.modal('toggle');        
     }
 </script>
