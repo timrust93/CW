@@ -125,9 +125,9 @@
             textAreas[0].value = description;
 
             var spans = form.querySelectorAll("span");
-            //spans[0].setAttribute("data-valmsg-for", `selectQType[${index}]`);
-            spans[0].setAttribute("data-valmsg-for", `TestQuestionList[${index}].Title`);
-            spans[1].setAttribute("data-valmsg-for", `TestQuestionList[${index}].Description`);
+            spans[0].setAttribute("data-valmsg-for", `selectQType[${index}]`);
+            spans[1].setAttribute("data-valmsg-for", `TestQuestionList[${index}].Title`);
+            spans[2].setAttribute("data-valmsg-for", `TestQuestionList[${index}].Description`);
 
             var buttons = form.querySelectorAll("button");
             buttons.forEach(x => x.setAttribute("data", index));
