@@ -1,36 +1,55 @@
 ﻿@page
 @model TemplateManagementModel
 @{
+    var questionsJson = System.Text.Json.JsonSerializer.Serialize(Model.TestQuestionList);
+    var questionTypesJson = System.Text.Json.JsonSerializer.Serialize(Model.QuestionTypeInfos);
 }
 
 <div>
     Here you manage template
 </div>
 
-<ul id="sortable">
-    @{
-        for (int i = 0; i < Model.TestQuestionList.Count; i++)
-        {
-            <li>
-                <form id="@($"form{i}")" method="POST" asp-page-handler="Save">
-                        <div>
-                            <p>Item 1</p>
-                            <input asp-for="TestQuestionList[i].Title" type="text" class="form-control" />
-                            <span asp-validation-for="TestQuestionList[i].Title" class="text-danger"></span>
-                            <div>
-                                <button type="button" data="@i" onclick="onClick(this)">Button 1</button>
-                            </div>
-                                            
-                        </div>
-                    </form>          
-            </li>            
-        }
-    }
-    
+<ul id="sortable">    
 </ul>
 <button type="button" onclick="addNewQuestion()">Add New Question</button>
 
 
+<template id="questionTemplate">
+    <li>
+        <form method="POST">
+            <div>
+                <label>Question Type</label>
+                <div>
+                    <select name="QuestionType" class="form-select" data=""
+                        data-val="true" data-val-required="The Question Type field is required.">
+                        <option disabled="" selected="">Please pick one</option>
+                        <option value="0">One line</option>
+                        <option value="1">Multiline</option>
+                        <option value="2">Number</option>
+                        <option value="3">Checkbox</option>
+                    </select>
+                    @* <span class="text-danger" data-valmsg-replace="true"></span> *@
+                </div>           
+                <label>Title:</label>
+                <input type="text" class="form-control"
+                       data-name="Title"
+                       data-val="true" data-val-required="The Title field is required." />
+                <span class="text-danger" data-valmsg-replace="true"></span>
+            </div>
+            <div>
+                <label>Description:</label>
+                <textarea type="text" class="form-control"
+                       data-name="Description"
+                       data-val="true" data-val-required="The Description field is required." />
+                </textarea>
+                <span class="text-danger" data-valmsg-replace="true"></span>
+            </div>
+            <div>
+                <button type="button" data="" onclick="onClick(this)">Save</button>
+            </div>
+        </form>
+    </li>
+</template>
 
 
 @section Scripts
@@ -44,79 +63,137 @@
     </script>
 
     <script>
-        $(document).ready(function () {
+        $(document).ready(function () {            
+            initialQuestions.forEach(function (question, index) {
+                addNewQuestion(question.Title, question.Description);
+            });
 
             var forms = document.querySelector('#sortable').querySelectorAll("form");
             for (i = 0; i < forms.length; i++)
             {
                 console.log(forms[i]);
                 $(forms[i]).on('keydown', function (e) {
-                    if (e.key === "Enter") {
+                    if (e.key === "Enter" &&
+                        ($(e.target)[0] != $("textarea")[0])) {
                         e.preventDefault(); // Prevent form submission
                         return false;
                     }
                 });
             }
+
+            //$validator.unobtrusive.parse(document);
         });
 
+        var initialQuestions = @Html.Raw(questionsJson);
+        // Function to add an initial question or new blank question
+        function addNewQuestion(title = "", description = "") {
+            var index = $("#sortable li").length;
 
-        var questionIndex = @Model.TestQuestionList.Count;
-        function addNewQuestion() {
-            var $lastForm = $("#sortable form").last();
-            var $newForm = $lastForm.clone();
+            // Clone the template
+            var template = document.getElementById("questionTemplate");
+            var clone = document.importNode(template.content, true);
 
-            $newForm.attr("id", `form${questionIndex}`);
+            // Populate fields
+            var form = clone.querySelector("form");
+            form.id = `form${index}`;
 
-            $newForm.find("input, span").each(function () {
-                var $input = $(this);
+            var select = form.querySelector("select");
+            select.id = "selectQType" + index;
+            console.log("select init: " + select);
+            $(select).find("option:first").prop("disabled", true);
 
-                if ($input.is("input")) {
-                    // Update name attribute
-                    var nameAttr = $input.attr("name");
-                    if (nameAttr) {
-                        // Replace the index in the name attribute
-                        $input.attr("name", nameAttr.replace(/\[\d+\]/, `[${questionIndex}]`));
-                        $input.val(""); // Clear input value
-                    }
-                }
-
-                if ($input.is("span")) {
-                    // Clear validation messages
-                    $input.text("");
-                }
+            $(select).selectmenu();
+            $(select).selectmenu({
+                open: function (event, ui) { onQTypeDropdownOpen(event, ui) },
+                select: function (event, ui) { onQTypeDropdownChosen(event, ui) },
+                close: function (event) { resetSelectedDDVal(event.target.value, event.target);}                
             });
 
-            
+            $(select).next('.ui-selectmenu-button').on('mousedown', function (e) {
+                console.log('mousedown on selectmenu button');
+                e.stopImmediatePropagation(); // Prevents dragging behavior from triggering
+            });
 
+            var inputs = form.querySelectorAll("input");
+            inputs[0].id = `title${index}`;
+            inputs[0].name = `TestQuestionList[${index}].Title`;
+            inputs[0].value = title;
 
-            // var newQuestion = `
-            //         <li>
-            //             <form id="form${questionIndex}" method="POST" asp-page-handler="Save">
-            //                 <div>
-            //                     <p>Item ${questionIndex + 1}</p>
-            //                     <input name="TestQuestionList[${questionIndex}].Title" type="text" class="form-control" />
-            //                     <span class="text-danger" data-valmsg-for="TestQuestionList[${questionIndex}].Title"></span>
-            //                     <button type="button" data-index="${questionIndex}" onclick="onClick(this)">Button</button>
-            //                 </div>
-            //             </form>
-            //         </li>
-            // `;
-            var li = document.createElement("li");
-            li.appendChild($newForm[0]);
-            $('#sortable').append(li);
-            questionIndex++;
-            $.validator.unobtrusive.parse($newForm);
+            var textAreas = clone.querySelectorAll("textarea");
+            textAreas[0].id = `description${index}`;
+            textAreas[0].name = `TestQuestionList[${index}].Description`;
+            textAreas[0].value = description;
+
+            var spans = form.querySelectorAll("span");
+            //spans[0].setAttribute("data-valmsg-for", `selectQType[${index}]`);
+            spans[0].setAttribute("data-valmsg-for", `TestQuestionList[${index}].Title`);
+            spans[1].setAttribute("data-valmsg-for", `TestQuestionList[${index}].Description`);
+
+            var buttons = form.querySelectorAll("button");
+            buttons.forEach(x => x.setAttribute("data", index));
+
+            // Append to sortable list
+            document.getElementById("sortable").appendChild(clone);
+
+            // Re-parse for validation
+            $.validator.unobtrusive.parse(`#form${index}`);
         }
 
+        var prevOpenDropdown = null;
+        var questionTypes = @Html.Raw(questionTypesJson);
+        function onQTypeDropdownOpen(event, ui) {                        
+            
+            var $select = $(event.target);
 
+            // Close the currently open dropdown if it's not the same as this one
+            if (prevOpenDropdown && prevOpenDropdown !== $select[0]) {
+                $(prevOpenDropdown).selectmenu("close");
+            }
+            prevOpenDropdown = $select[0]
 
+            $select.children("option").each(function (index, option) {
+                if (index == 0) return;
+                var qType = questionTypes[index - 1];                
+                option.text = `${qType.DisplayName} (${qType.Left})`;
+                $(option).prop("disabled", qType.Left <= 0);
+                    
+            });
+            $select.selectmenu("refresh");
+        }
+
+        function onQTypeDropdownChosen(event, ui)
+        {
+            var id = $(ui)[0].item.value;            
+            if(!id || isNaN(id)) return;
+
+            var freedId = event.target.getAttribute("data");
+            event.target.setAttribute("data", id);            
+            countQuestionTypeData(freedId, id);
+        }
+
+        function resetSelectedDDVal(id, select) { 
+            var qType = questionTypes.find(obj => {
+                return obj.Id == id;
+            });
+            if (qType) {
+                $(select).find(`option[value="${id}"]`).text(qType.DisplayName); // Change the display name
+            }
+            $(select).selectmenu("refresh");
+        }
+
+        function countQuestionTypeData(freedId, chosenId) {
+            if (freedId === chosenId)
+                return;
+            if (!isNaN(freedId) && freedId != '') {
+                var questionType = questionTypes.find(x => x.Id == freedId);
+                questionType.Left += 1;
+            }
+            questionType = questionTypes.find(x => x.Id == chosenId);
+            questionType.Left -= 1;
+        }
 
         function onClick(args)
-        {
-            
-            // console.log('button clicked');
-            // console.log(args.getAttribute('data'));
-            
+        {            
             var id = args.getAttribute('data');
             var form = $(`#form${id}`);
 
@@ -154,7 +231,7 @@
     ul#sortable li {
     margin: 5px;
     padding: 10px; /* Space inside the li */
-    border: 1px solid #ddd; /* Add a border to make items clear */
+    border: 1px solid black; /* Add a border to make items clear */
     background-color: #f9f9f9;
     cursor: grab; /* Change cursor to indicate draggable */
     }
