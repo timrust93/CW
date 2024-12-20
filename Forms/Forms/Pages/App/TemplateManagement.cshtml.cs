@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using System.ComponentModel.DataAnnotations;
 using static Forms.Pages.App.TemplateManagementModel;
 
@@ -26,9 +28,26 @@ namespace Forms.Pages.App
 
         [BindProperty]
         public List<TestQuestion> TestQuestionList { get; set; } = new List<TestQuestion>();
-
+        [BindProperty]
         public List<QuestionTypeInfo> QuestionTypeInfos { get; set; } = new List<QuestionTypeInfo>();
-        
+
+        public class Stuff
+        {
+            [Required]
+            public string X { get; set; }
+        }
+
+        [BindProperty]        
+        public Stuff SomeStuff { get; set; }
+
+        public ICollection<SelectListItem> ItemsWithGroups { get; set; } = new List<SelectListItem>
+        {
+           new SelectListItem{Value= "js", Text="JavaScript"},
+           new SelectListItem{Value= "cpp", Text="C++"},
+           new SelectListItem{Value= "python", Text= "Python"},
+           new SelectListItem{Value= "csharp", Text="C#"},
+        };
+
 
         public void OnGet(int id)
         {
@@ -58,7 +77,17 @@ namespace Forms.Pages.App
 
         public IActionResult OnPost(int id)
         {
+            if (ModelState.TryGetValue("X", out ModelStateEntry stateEntry))
+            {
+                Console.WriteLine(stateEntry.RawValue.ToString());                
+            }
+            
+            Console.WriteLine(string.Join(",", ModelState.Keys));
+            Console.WriteLine(string.Join(",", ModelState.Values));
+
+            //ModelState.Keys.Join(',');
             Console.WriteLine("id: " + id);
+            Console.WriteLine("model state valid? " + ModelState.IsValid);
             return Page(); // Or any response logic
         }
     }
