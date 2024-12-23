@@ -1,27 +1,43 @@
 ﻿@page
 @model TemplateManagementModel
 @{
-    var questionsJson = System.Text.Json.JsonSerializer.Serialize(Model.TestQuestionList);
+    var questionsJson = System.Text.Json.JsonSerializer.Serialize(Model.QuestionList);
     var questionTypesJson = System.Text.Json.JsonSerializer.Serialize(Model.QuestionTypeInfos);
 }
 
-<div>
-    <form method="post">
-        <select asp-items="Model.ItemsWithGroups" asp-for="SomeStuff.X">
-            <option value="">**Not selected**</option>            
-        </select>
-        <span asp-validation-for="SomeStuff.X" class="text-danger"></span>
-        <button type="submit">Submit</button>
-    </form>
-    
-    Here you manage template    
+<div>    
+    Here you manage template
 </div>
 
 <ul id="sortable">    
 </ul>
-<button type="button" onclick="addNewQuestion()">Add New Question</button>
+
+@{
+    if (Model.QuestonsLeftToAdd)
+    {
+        // <button type="button" onclick="addNewQuestion()">Add New Question</button>
+        <a class="btn btn-primary" asp-page="CreateQuestion" asp-route-id="@Model.Template.Id">Create new</a>
+    }
+}
 
 
+<div class="modal" tabindex="-1" id="addQuestionModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Delete template</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure?</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="deleteConfirm" class="btn btn-primary" data-bs-dismiss="modal">Yes</button>
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">No</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 
 <template id="questionTemplate">
@@ -38,7 +54,9 @@
                         <option value="2">Number</option>
                         <option value="3">Checkbox</option>
                     </select>
-                    <span class="text-danger templateValidation" data-valmsg-replace="true"></span>
+                    <div>
+                        <span class="text-danger templateValidation" data-valmsg-replace="true"></span>
+                    </div>                    
                 </div>           
                 <label>Title:</label>
                 <input type="text" class="form-control"
@@ -73,9 +91,13 @@
     </script>
 
     <script>
+        var initialQuestions = @Html.Raw(questionsJson);
         $(document).ready(function () {            
             initialQuestions.forEach(function (question, index) {
-                addNewQuestion(question.Title, question.Description);
+                var question = createQuestionForm(question.Title, question.Description);
+                document.getElementById("sortable").appendChild(question);
+                $.validator.setDefaults({ ignore: [] });
+                $.validator.unobtrusive.parse(`#form${index}`);
             });
 
             var forms = document.querySelector('#sortable').querySelectorAll("form");
@@ -95,9 +117,21 @@
 
         });
 
-        var initialQuestions = @Html.Raw(questionsJson);
+        function addNewQuestion()
+        {
+            var modal = $("#addQuestionModal");
+            const myModal = document.getElementById('addQuestionModal')
+            var question = createQuestionForm();
+            modal.find(".modal-body").append(question);
+            var appendedQuestion = modal.find(".modal-body").children().last();
+            $.validator.setDefaults({ ignore: [] });            
+            $.validator.unobtrusive.parse(appendedQuestion);            
+            modal.modal('toggle');
+        }
+
+        
         // Function to add an initial question or new blank question
-        function addNewQuestion(title = "", description = "") {
+        function createQuestionForm(title = "", description = "") {
             var index = $("#sortable li").length;
 
             // Clone the template
@@ -111,6 +145,8 @@
             var select = form.querySelector("select");
             select.id = "selectQType" + index;
             select.name = `selectQType[${index}]`;
+            select.value = initialQuestions[index].Type;
+            console.log("select value: " + select.value);
             $(select).find("option:first").prop("disabled", true);
 
             $(select).selectmenu();
@@ -127,38 +163,41 @@
 
             var inputs = form.querySelectorAll("input");
             inputs[0].id = `title${index}`;
-            inputs[0].name = `TestQuestionList[${index}].Title`;
+            inputs[0].name = `QuestionList[${index}].Title`;
             inputs[0].value = title;
 
             var textAreas = clone.querySelectorAll("textarea");
             textAreas[0].id = `description${index}`;
-            textAreas[0].name = `TestQuestionList[${index}].Description`;
+            textAreas[0].name = `QuestionList[${index}].Description`;
             textAreas[0].value = description;
 
             var spans = form.querySelectorAll(".templateValidation");
             spans[0].setAttribute("data-valmsg-for", `selectQType[${index}]`);
-            spans[1].setAttribute("data-valmsg-for", `TestQuestionList[${index}].Title`);
-            spans[2].setAttribute("data-valmsg-for", `TestQuestionList[${index}].Description`);
+            spans[1].setAttribute("data-valmsg-for", `QuestionList[${index}].Title`);
+            spans[2].setAttribute("data-valmsg-for", `QuestionList[${index}].Description`);
 
             var buttons = form.querySelectorAll("button");
             buttons.forEach(x => x.setAttribute("data", index));
 
+            
             // Append to sortable list
-            document.getElementById("sortable").appendChild(clone);
+            //document.getElementById("sortable").appendChild(clone);                        
 
             // Re-parse for validation
-            $.validator.setDefaults({ ignore: [] });
-            $.validator.unobtrusive.parse(`#form${index}`);
+            // $.validator.setDefaults({ ignore: [] });
+            // $.validator.unobtrusive.parse(`#form${index}`);
+            return clone;
         }
 
         var prevOpenDropdown = null;
         var questionTypes = @Html.Raw(questionTypesJson);
         function onQTypeDropdownOpen(event, ui) {                        
-            
+            console.log("open");
             var $select = $(event.target);
 
             // Close the currently open dropdown if it's not the same as this one
             if (prevOpenDropdown && prevOpenDropdown !== $select[0]) {
+                console.log('close because');
                 $(prevOpenDropdown).selectmenu("close");
             }
             prevOpenDropdown = $select[0]
@@ -183,11 +222,12 @@
             countQuestionTypeData(freedId, id);
         }
 
-        function resetSelectedDDVal(id, select) { 
+        function resetSelectedDDVal(id, select) {            
             var qType = questionTypes.find(obj => {
                 return obj.Id == id;
             });
-            if (qType) {
+            if (qType && id != '') {
+                console.log("id found");
                 $(select).find(`option[value="${id}"]`).text(qType.DisplayName); // Change the display name
             }
             $(select).selectmenu("refresh");
@@ -238,6 +278,10 @@
     list-style-type: none; /* Removes the dots */
     margin: 0;
     padding: 0;
+    }
+
+    .ui-selectmenu-menu {
+        z-index: 1055 !important; /* Bootstrap modal has z-index: 1050 */
     }
 
     ul#sortable li {

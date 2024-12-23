@@ -1,0 +1,35 @@
+﻿@page
+@model CreateQuestionModel
+@{
+}
+
+
+<div>
+    <h2>Create question</h2>
+    <form id="create" method="post">
+        <input hidden asp-for="TemplateId"/>
+        <div class="form-group">
+            <label class="form-label">Question Type</label>
+            <select class="form-control dropdown" asp-for="Question.Type"
+                    asp-items="Model.QuestionTypesSelect">
+                <option value="" selected="true" disabled>Select option</option>
+            </select>
+            <span asp-validation-for="QuestionTypeInfo" class="text-danger"></span>
+        </div>
+        
+        <label asp-for="Question.Title" class="form-label">Title</label>        
+        <input asp-for="Question.Title" class="form-control" />
+        <span asp-validation-for="Question.Title" class="text-danger"></span>
+        <div>
+            <label asp-for="Question.Description" class="form-label">Description</label>
+            <textarea asp-for="Question.Description" class="form-control" rows="5"></textarea>
+            <span asp-validation-for="Question.Description" class="text-danger"></span>
+        </div>
+        <br />
+        <button id="create-submit" type="submit" class="btn btn-primary" style="float:right">Create</button>
+    </form>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

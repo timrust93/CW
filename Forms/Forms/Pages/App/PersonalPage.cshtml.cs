@@ -9,11 +9,11 @@ namespace Forms.Pages.App
     [Authorize]
     public class PersonalPageModel : PageModel
     {
-        private FormService _formSerivce;
+        private TemplateService _formSerivce;
 
         public List<Template> Templates { get; set; }
 
-        public PersonalPageModel(FormService formService)
+        public PersonalPageModel(TemplateService formService)
         {
             _formSerivce = formService;
         }

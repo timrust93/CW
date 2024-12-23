@@ -16,7 +16,7 @@ builder.Services.AddDefaultIdentity<ApplicationUser>()
     .AddEntityFrameworkStores<ApplicationDbContext>();
 builder.Services.AddRazorPages();
 
-builder.Services.AddScoped<FormService>();
+builder.Services.AddScoped<TemplateService>();
 
 var app = builder.Build();
 
