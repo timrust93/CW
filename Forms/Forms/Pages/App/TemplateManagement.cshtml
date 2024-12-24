@@ -1,8 +1,13 @@
 ﻿@page
 @model TemplateManagementModel
+@using authHelpers = Forms.AuthorizationHelpers; 
 @{
     var questionsJson = System.Text.Json.JsonSerializer.Serialize(Model.QuestionList);
     var questionTypesJson = System.Text.Json.JsonSerializer.Serialize(Model.QuestionTypeInfos);
+    string changeOrderLink = $"TemplateManagement?handler=ChangeOrder&id={Model.TemplateId}";
+    string saveQuestionLink = $"TemplateManagement?handler=SaveQuestion&id={Model.TemplateId}";
+    string deleteQuestionLink = $"TemplateManagement?handler=DeleteQuestion&id={Model.TemplateId}";
+    string antiForgeryKey = authHelpers.AuthHelper.ANTI_FORGERY;
 }
 
 <div>    
@@ -12,32 +17,10 @@
 <ul id="sortable">    
 </ul>
 
-@{
-    if (Model.QuestonsLeftToAdd)
-    {
-        // <button type="button" onclick="addNewQuestion()">Add New Question</button>
-        <a class="btn btn-primary" asp-page="CreateQuestion" asp-route-id="@Model.Template.Id">Create new</a>
-    }
-}
+<a class="btn btn-primary" id="CreateQButton" asp-page="CreateQuestion" asp-route-id="@Model.Template.Id">Create new</a>
 
 
-<div class="modal" tabindex="-1" id="addQuestionModal">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Delete template</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <p>Are you sure?</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" id="deleteConfirm" class="btn btn-primary" data-bs-dismiss="modal">Yes</button>
-                <button type="button" class="btn btn-primary" data-bs-dismiss="modal">No</button>
-            </div>
-        </div>
-    </div>
-</div>
+
 
 
 <template id="questionTemplate">
@@ -49,8 +32,8 @@
                     <select class="form-select"  data=""
                         data-val="true" data-val-required="The Question Type field is required.">
                         <option value="" disabled="" selected="">Please pick one</option>
-                        <option value="0">One line</option>
-                        <option value="1">Multiline</option>
+                        <option value="0">Single Line</option>
+                        <option value="1">Multi Line</option>
                         <option value="2">Number</option>
                         <option value="3">Checkbox</option>
                     </select>
@@ -73,7 +56,8 @@
                 <span class="text-danger templateValidation" data-valmsg-replace="true"></span>
             </div>
             <div>
-                <button type="button" data="" onclick="onClick(this)">Save</button>
+                <button type="button" data="" onclick="onSaveQuestion(this)">Save</button>
+                <button type="button" data="" onclick="onDeleteQuestion(this)">Delete</button>
             </div>
         </form>
     </li>
@@ -86,7 +70,12 @@
     <script src="https://code.jquery.com/ui/1.13.0/jquery-ui.min.js"></script>
     <script>
         $(function () {
-            $('#sortable').sortable();
+            var sortable = $('#sortable');
+            //$('#sortable').sortable();
+            sortable.sortable({
+                update: function (event, ui) { sortableUpdated(event, ui); }
+            });            
+            
         });
     </script>
 
@@ -94,8 +83,9 @@
         var initialQuestions = @Html.Raw(questionsJson);
         $(document).ready(function () {            
             initialQuestions.forEach(function (question, index) {
-                var question = createQuestionForm(question.Title, question.Description);
-                document.getElementById("sortable").appendChild(question);
+                var questionElement = createQuestionForm(question.Title, question.Description);
+                
+                document.getElementById("sortable").appendChild(questionElement);
                 $.validator.setDefaults({ ignore: [] });
                 $.validator.unobtrusive.parse(`#form${index}`);
             });
@@ -113,21 +103,10 @@
                 });
             }
 
+            checkCreateQuestionButton();
             //$.validator.setDefaults({ ignore: [] });
 
         });
-
-        function addNewQuestion()
-        {
-            var modal = $("#addQuestionModal");
-            const myModal = document.getElementById('addQuestionModal')
-            var question = createQuestionForm();
-            modal.find(".modal-body").append(question);
-            var appendedQuestion = modal.find(".modal-body").children().last();
-            $.validator.setDefaults({ ignore: [] });            
-            $.validator.unobtrusive.parse(appendedQuestion);            
-            modal.modal('toggle');
-        }
 
         
         // Function to add an initial question or new blank question
@@ -138,9 +117,15 @@
             var template = document.getElementById("questionTemplate");
             var clone = document.importNode(template.content, true);
 
+            var li = clone.querySelector("li");
+            li.id = `qli${index}`;            
+            li.id = `qli${index}`;
+            li.setAttribute("data", index);
+            
             // Populate fields
             var form = clone.querySelector("form");
             form.id = `form${index}`;
+            form.setAttribute("data", initialQuestions[index].Id);
 
             var select = form.querySelector("select");
             select.id = "selectQType" + index;
@@ -178,14 +163,7 @@
 
             var buttons = form.querySelectorAll("button");
             buttons.forEach(x => x.setAttribute("data", index));
-
             
-            // Append to sortable list
-            //document.getElementById("sortable").appendChild(clone);                        
-
-            // Re-parse for validation
-            // $.validator.setDefaults({ ignore: [] });
-            // $.validator.unobtrusive.parse(`#form${index}`);
             return clone;
         }
 
@@ -244,30 +222,120 @@
             questionType.Left -= 1;
         }
 
-        function onClick(args)
-        {            
+        function onSaveQuestion(args) {            
             var id = args.getAttribute('data');
             var form = $(`#form${id}`);
-
             var data = form.serializeArray();
-            console.log("Form data: ", data);
-            var mapped = data.map((x) => {
-                let name = x.name.substring(x.name.lastIndexOf('.') + 1);                
-                return { name : name, value : x.value }             
+
+            if (!form.valid())
+                return;
+
+            var questionData = initialQuestions.find(x => x.Id == form.attr("data"));
+            var questionClone = { ...questionData };
+            questionClone.Type = data[0].value;
+            questionClone.Title = data[1].value;
+            questionClone.Description = data[2].value;             
+                                
+
+            let link = "@Html.Raw(saveQuestionLink)";
+            fetch(link, {
+                method: 'POST',
+                headers: getAjaxHeaders(),
+                body: JSON.stringify(questionClone)
+            }).then(response => response.json())
+                .then(data => {
+                    if (data.success) { 
+                        questionData = questionClone;
+                        alert('saved');
+                    }
+                    else{
+                        alert(data.message);
+                    }
+                })
+                .catch(error => {
+                    alert('Something went wrong');
+                });                        
+        }
+
+        function onDeleteQuestion(args) {
+            var id = args.getAttribute('data');
+            var form = $(`#form${id}`);
+            var questionData = initialQuestions.find(x => x.Id == form.attr("data"));
+
+            var li = form.parent("li");
+
+            let link = "@Html.Raw(deleteQuestionLink)";
+            fetch(link, {
+                method: 'POST',
+                headers: getAjaxHeaders(),
+                body: JSON.stringify(questionData)
+            }).then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        questionTypes.find(x => x.Id == questionData.Type).Left += 1;
+                        initialQuestions.splice(initialQuestions.indexOf(questionData), 1);                        
+                        $(li).remove();
+                        checkCreateQuestionButton();
+                    }
+                    else {
+                        alert(data.message);
+                    }
+                })
+                .catch(error => {
+                    alert('Something went wrong');
+                });                      
+        }
+
+        function checkCreateQuestionButton()
+        {
+            var maxQuestionCount = @Html.Raw(Model.MaxQuestionCount);
+            // console.log("max q count: " + maxQuestionCount);
+            // return;
+            var questionButton = document.getElementById("CreateQButton");
+            var isHidden = initialQuestions.length >= maxQuestionCount;
+            if (isHidden) {
+                questionButton.setAttribute('hidden', true);
+            }
+            else {
+                questionButton.removeAttribute('hidden');
+            }
+        }
+
+        function sortableUpdated(event, ui) {
+                        
+            var sortable = $("#sortable");
+            var idsInOrder = sortable.sortable("toArray");
+            console.log(event.target.id);
+
+            var reorderInfoArr = [];
+            idsInOrder.forEach((value, index) => {
+                var qId = sortable.find(`#${value}`).find("form").attr("data");                
+                reorderInfoArr.push({ "QId": qId, orderIndex: index });
             });
-
-            // fetch("/TemplateManagement/handler?" {
-            //     method: 'POST',
-            //     headers: {
-            //         'Conent-Type':'application/json'
-            //     }
-            //     body: JSON
-            // });
-
             
-            console.log("mapped: ", mapped);
             
-            console.log("form valid: " + form.valid());
+            let link = "@Html.Raw(changeOrderLink)";
+            fetch(link, {
+                method: 'POST',
+                headers: getAjaxHeaders(),
+                body: JSON.stringify(reorderInfoArr)
+            }).then(response => response.json())
+                .then(data => {
+
+                })
+                .catch(error => {
+                    alert('Something went wrong');
+                });            
+        }
+
+        function getAjaxHeaders()
+        {
+            let antiforgeryName = "__RequestVerificationToken";
+            let antiForgeryVal = $("#form0").find(`input[name=${antiforgeryName}]`).val();
+            let headers = new Headers();
+            headers.append("Content-Type", "application/json");
+            headers.append("@antiForgeryKey", antiForgeryVal);
+            return headers;
         }
     </script>
 }

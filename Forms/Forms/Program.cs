@@ -1,3 +1,4 @@
+using Forms.AuthorizationHelpers;
 using Forms.Data;
 using Forms.Services;
 using Microsoft.AspNetCore.Identity;
@@ -17,6 +18,7 @@ builder.Services.AddDefaultIdentity<ApplicationUser>()
 builder.Services.AddRazorPages();
 
 builder.Services.AddScoped<TemplateService>();
+builder.Services.AddAntiforgery(o => o.HeaderName = AuthHelper.ANTI_FORGERY);
 
 var app = builder.Build();
 

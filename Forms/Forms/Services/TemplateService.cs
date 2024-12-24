@@ -51,6 +51,7 @@ namespace Forms.Services
         {
             return template.QuestionList.Count(x => x.Type == questionTypeId);
         }
+        
 
         public string GetQuestionTypeName(int questionTypeId)
         {
