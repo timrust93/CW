@@ -10,11 +10,13 @@
         <input hidden asp-for="TemplateId"/>
         <div class="form-group">
             <label class="form-label">Question Type</label>
-            <select class="form-control dropdown" asp-for="Question.Type"
+            <select class="form-control dropdown" asp-for="QuestionTypeInfo"
                     asp-items="Model.QuestionTypesSelect">
                 <option value="" selected="true" disabled>Select option</option>
             </select>
-            <span asp-validation-for="QuestionTypeInfo" class="text-danger"></span>
+            <div>
+                <span asp-validation-for="QuestionTypeInfo" class="text-danger"></span>
+            </div>            
         </div>
         
         <label asp-for="Question.Title" class="form-label">Title</label>        

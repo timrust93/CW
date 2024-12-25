@@ -30,7 +30,7 @@
                 <label>Question Type</label>
                 <div>
                     <select class="form-select"  data=""
-                        data-val="true" data-val-required="The Question Type field is required.">
+                            data-val="true" data-val-required="The Question Type field is required.">
                         <option value="" disabled="" selected="">Please pick one</option>
                         <option value="0">Single Line</option>
                         <option value="1">Multi Line</option>
@@ -68,16 +68,6 @@
 {
     <partial name="_ValidationScriptsPartial" />
     <script src="https://code.jquery.com/ui/1.13.0/jquery-ui.min.js"></script>
-
-@*     <script>
-        var initialQuestions = @Html.Raw(questionsJson);
-        var questionTypes = @Html.Raw(questionTypesJson);
-        var maxQuestionCount = @Html.Raw(Model.MaxQuestionCount);
-        var changeOrderLink = @Html.Raw(changeOrderLink);
-        var deleteQuestionLink = @Html.Raw(deleteQuestionLink);
-        var saveQuestionLink = @Html.Raw(saveQuestionLink);
-        var antiForgeryKey = @antiForgeryKey;
-    </script> *@
 
     <script src="/js/questionManagement.js"></script>
 

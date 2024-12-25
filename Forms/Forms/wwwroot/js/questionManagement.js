@@ -2,17 +2,16 @@
 
 function initializeQuestionManagement() {
     initialQuestions.forEach(function (question, index) {
-        console.log("initial questions: " + index);
         var questionElement = createQuestionForm(question.Title, question.Description);
 
         document.getElementById("sortable").appendChild(questionElement);
         $.validator.setDefaults({ ignore: [] });
         $.validator.unobtrusive.parse(`#form${index}`);
+        //$(`#form${index}`).valid();
     });
 
     var forms = document.querySelector('#sortable').querySelectorAll("form");
     for (i = 0; i < forms.length; i++) {
-        console.log(forms[i]);
         $(forms[i]).on('keydown', function (e) {
             if (e.key === "Enter" &&
                 ($(e.target)[0] != $("textarea")[0])) {
@@ -21,6 +20,27 @@ function initializeQuestionManagement() {
             }
         });
     }
+
+    $.validator.addMethod("customSelectValidation", function (value, element) {        
+        console.log('custom select validation');
+        if (element.tagName === "SELECT") {
+            console.log("element val: " + element.value);
+            return element.value !== ""; // Ensure value is not empty
+        }
+        return true;
+    }, "Please select a valid option.");
+
+    // Apply the custom validation rule
+    $("select").each(function () {
+        $(this).rules("add", {
+            customSelectValidation: true
+        });
+    });
+
+    //$.validator.methods.required = function (value, element) {
+    //    console.log("Required validation:", value, element);
+    //    return value !== "";
+    //};
 
     checkCreateQuestionButton();
 }
@@ -36,7 +56,6 @@ $(function () {
 
 function createQuestionForm(title = "", description = "") {
     var index = $("#sortable li").length;
-    console.log("index: " + index);
 
     // Clone the template
     var template = document.getElementById("questionTemplate");
@@ -56,9 +75,9 @@ function createQuestionForm(title = "", description = "") {
     select.id = "selectQType" + index;
     select.name = `selectQType[${index}]`;
     select.value = initialQuestions[index].Type;
-    select.setAttribute('data', select.value);
-    console.log("select value: " + select.value);
+    select.setAttribute('data', select.value);    
     $(select).find("option:first").prop("disabled", true);
+
 
     $(select).selectmenu();
     $(select).selectmenu({
@@ -67,8 +86,7 @@ function createQuestionForm(title = "", description = "") {
         close: function (event) { resetSelectedDDVal(event.target.value, event.target); }
     });
 
-    $(select).next('.ui-selectmenu-button').on('mousedown', function (e) {
-        console.log('mousedown on selectmenu button');
+    $(select).next('.ui-selectmenu-button').on('mousedown', function (e) {        
         e.stopImmediatePropagation(); // Prevents dragging behavior from triggering
     });
 
@@ -96,7 +114,11 @@ function createQuestionForm(title = "", description = "") {
 var prevOpenDropdown = null;
 function onQTypeDropdownOpen(event, ui) {
     console.log("open");
+
     var $select = $(event.target);
+    
+ 
+    console.log("select valu on open: " + event.target.value);
 
     // Close the currently open dropdown if it's not the same as this one
     if (prevOpenDropdown && prevOpenDropdown !== $select[0]) {
@@ -112,6 +134,8 @@ function onQTypeDropdownOpen(event, ui) {
         $(option).prop("disabled", qType.Left <= 0);
 
     });
+    console.log("select valu on open 2: " + event.target.value);
+    var isValid = $select.valid();
     $select.selectmenu("refresh");
 }
 
@@ -125,17 +149,34 @@ function onQTypeDropdownChosen(event, ui) {
 }
 
 function resetSelectedDDVal(id, select) {
-    console.log('reset select dd val');
-    console.log("id: " + id + " select: " + select);
+    console.log('reset select dd val: ' + id);
+    //console.log("id: " + id + " select: " + select);
     var qType = questionTypes.find(obj => {
         return obj.Id == id;
     });
-    if (qType && id != '') {
-        console.log("id found");
-        $(select).find(`option[value="${id}"]`).text(qType.DisplayName); // Change the display name
+    if (qType && id != '') {      
+        let option = $(select).find(`option[value="${id}"]`);
+        //$(select).find(`option[value="${id}"]`).text(qType.DisplayName); // Change the display name
+        $(option).text(qType.DisplayName);
+        $(option).prop("disabled", false);
+
     }
+    //select.setAttribute('value', select.value);
+    console.log("select value on close: " + select.value);
+    
     $(select).selectmenu("refresh");
+    $(select).rules("add", { customSelectValidation: true });
+    $(select).validate();
+    var isValid = $(select).valid();
+    // If still not valid, manually trigger error display 
+    if (!isValid) {
+        var validator = $(select).closest("form").validate();
+        validator.showErrors();
+    }
+    
 }
+
+
 
 function countQuestionTypeData(freedId, chosenId) {
     console.log("on chosen: " + freedId + " cid: " + chosenId);
@@ -153,6 +194,7 @@ function onSaveQuestion(args) {
     var id = args.getAttribute('data');
     var form = $(`#form${id}`);
     var data = form.serializeArray();
+    console.log("form " + JSON.stringify(data));
 
     if (!form.valid())
         return;
