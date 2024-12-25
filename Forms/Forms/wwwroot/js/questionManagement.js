@@ -2,15 +2,14 @@
 
 function initializeQuestionManagement() {
     initialQuestions.forEach(function (question, index) {
-        var questionElement = createQuestionForm(question.Title, question.Description);
+        let questionElement = createQuestionForm(question.Title, question.Description);
 
         document.getElementById("sortable").appendChild(questionElement);
         $.validator.setDefaults({ ignore: [] });
         $.validator.unobtrusive.parse(`#form${index}`);
-        //$(`#form${index}`).valid();
     });
 
-    var forms = document.querySelector('#sortable').querySelectorAll("form");
+    let forms = document.querySelector('#sortable').querySelectorAll("form");
     for (i = 0; i < forms.length; i++) {
         $(forms[i]).on('keydown', function (e) {
             if (e.key === "Enter" &&
@@ -20,33 +19,11 @@ function initializeQuestionManagement() {
             }
         });
     }
-
-    $.validator.addMethod("customSelectValidation", function (value, element) {        
-        console.log('custom select validation');
-        if (element.tagName === "SELECT") {
-            console.log("element val: " + element.value);
-            return element.value !== ""; // Ensure value is not empty
-        }
-        return true;
-    }, "Please select a valid option.");
-
-    // Apply the custom validation rule
-    $("select").each(function () {
-        $(this).rules("add", {
-            customSelectValidation: true
-        });
-    });
-
-    //$.validator.methods.required = function (value, element) {
-    //    console.log("Required validation:", value, element);
-    //    return value !== "";
-    //};
-
     checkCreateQuestionButton();
 }
 
 $(function () {
-    var sortable = $('#sortable');
+    let sortable = $('#sortable');
     sortable.sortable({
         update: function (event, ui) { sortableUpdated(event, ui); }
     });
@@ -55,27 +32,26 @@ $(function () {
 
 
 function createQuestionForm(title = "", description = "") {
-    var index = $("#sortable li").length;
+    let index = $("#sortable li").length;
 
     // Clone the template
-    var template = document.getElementById("questionTemplate");
-    var clone = document.importNode(template.content, true);
+    let template = document.getElementById("questionTemplate");
+    let clone = document.importNode(template.content, true);
 
-    var li = clone.querySelector("li");
+    let li = clone.querySelector("li");
     li.id = `qli${index}`;
     li.id = `qli${index}`;
     li.setAttribute("data", index);
 
     // Populate fields
-    var form = clone.querySelector("form");
+    let form = clone.querySelector("form");
     form.id = `form${index}`;
     form.setAttribute("data", initialQuestions[index].Id);
 
-    var select = form.querySelector("select");
+    let select = form.querySelector("select");
     select.id = "selectQType" + index;
     select.name = `selectQType[${index}]`;
     select.value = initialQuestions[index].Type;
-    select.setAttribute('data', select.value);    
     $(select).find("option:first").prop("disabled", true);
 
 
@@ -90,35 +66,31 @@ function createQuestionForm(title = "", description = "") {
         e.stopImmediatePropagation(); // Prevents dragging behavior from triggering
     });
 
-    var inputs = form.querySelectorAll("input");
+    let inputs = form.querySelectorAll("input");
     inputs[0].id = `title${index}`;
     inputs[0].name = `QuestionList[${index}].Title`;
     inputs[0].value = title;
 
-    var textAreas = clone.querySelectorAll("textarea");
+    let textAreas = clone.querySelectorAll("textarea");
     textAreas[0].id = `description${index}`;
     textAreas[0].name = `QuestionList[${index}].Description`;
     textAreas[0].value = description;
 
-    var spans = form.querySelectorAll(".templateValidation");
+    let spans = form.querySelectorAll(".templateValidation");
     spans[0].setAttribute("data-valmsg-for", `selectQType[${index}]`);
     spans[1].setAttribute("data-valmsg-for", `QuestionList[${index}].Title`);
     spans[2].setAttribute("data-valmsg-for", `QuestionList[${index}].Description`);
 
-    var buttons = form.querySelectorAll("button");
+    let buttons = form.querySelectorAll("button");
     buttons.forEach(x => x.setAttribute("data", index));
 
     return clone;
 }
 
-var prevOpenDropdown = null;
-function onQTypeDropdownOpen(event, ui) {
-    console.log("open");
+let prevOpenDropdown = null;
+function onQTypeDropdownOpen(event, ui) {    
 
-    var $select = $(event.target);
-    
- 
-    console.log("select valu on open: " + event.target.value);
+    let $select = $(event.target);   
 
     // Close the currently open dropdown if it's not the same as this one
     if (prevOpenDropdown && prevOpenDropdown !== $select[0]) {
@@ -129,61 +101,44 @@ function onQTypeDropdownOpen(event, ui) {
 
     $select.children("option").each(function (index, option) {
         if (index == 0) return;
-        var qType = questionTypes[index - 1];
+        let qType = questionTypes[index - 1];
         option.text = `${qType.DisplayName} (${qType.Left})`;
         $(option).prop("disabled", qType.Left <= 0);
 
     });
-    console.log("select valu on open 2: " + event.target.value);
-    var isValid = $select.valid();
     $select.selectmenu("refresh");
 }
 
 function onQTypeDropdownChosen(event, ui) {
-    var id = $(ui)[0].item.value;
+    let id = $(ui)[0].item.value;
     if (!id || isNaN(id)) return;
 
-    var freedId = event.target.getAttribute("data");
+    let freedId = event.target.getAttribute("data");
     event.target.setAttribute("data", id);
     countQuestionTypeData(freedId, id);
 }
 
 function resetSelectedDDVal(id, select) {
-    console.log('reset select dd val: ' + id);
-    //console.log("id: " + id + " select: " + select);
-    var qType = questionTypes.find(obj => {
+
+    let qType = questionTypes.find(obj => {
         return obj.Id == id;
     });
     if (qType && id != '') {      
         let option = $(select).find(`option[value="${id}"]`);
-        //$(select).find(`option[value="${id}"]`).text(qType.DisplayName); // Change the display name
         $(option).text(qType.DisplayName);
         $(option).prop("disabled", false);
-
-    }
-    //select.setAttribute('value', select.value);
-    console.log("select value on close: " + select.value);
-    
-    $(select).selectmenu("refresh");
-    $(select).rules("add", { customSelectValidation: true });
-    $(select).validate();
-    var isValid = $(select).valid();
-    // If still not valid, manually trigger error display 
-    if (!isValid) {
-        var validator = $(select).closest("form").validate();
-        validator.showErrors();
-    }
-    
+    }    
+    $(select).selectmenu("refresh");   
+    $(select).valid();    
 }
 
 
 
 function countQuestionTypeData(freedId, chosenId) {
-    console.log("on chosen: " + freedId + " cid: " + chosenId);
     if (freedId === chosenId)
         return;
     if (!isNaN(freedId) && freedId != '') {
-        var questionType = questionTypes.find(x => x.Id == freedId);
+        let questionType = questionTypes.find(x => x.Id == freedId);
         questionType.Left += 1;
     }
     questionType = questionTypes.find(x => x.Id == chosenId);
@@ -191,16 +146,16 @@ function countQuestionTypeData(freedId, chosenId) {
 }
 
 function onSaveQuestion(args) {
-    var id = args.getAttribute('data');
-    var form = $(`#form${id}`);
-    var data = form.serializeArray();
+    let id = args.getAttribute('data');
+    let form = $(`#form${id}`);
+    let data = form.serializeArray();
     console.log("form " + JSON.stringify(data));
 
     if (!form.valid())
         return;
 
-    var questionData = initialQuestions.find(x => x.Id == form.attr("data"));
-    var questionClone = { ...questionData };
+    let questionData = initialQuestions.find(x => x.Id == form.attr("data"));
+    let questionClone = { ...questionData };
     questionClone.Type = data[0].value;
     questionClone.Title = data[1].value;
     questionClone.Description = data[2].value;
@@ -227,11 +182,11 @@ function onSaveQuestion(args) {
 }
 
 function onDeleteQuestion(args) {
-    var id = args.getAttribute('data');
-    var form = $(`#form${id}`);
-    var questionData = initialQuestions.find(x => x.Id == form.attr("data"));
+    let id = args.getAttribute('data');
+    let form = $(`#form${id}`);
+    let questionData = initialQuestions.find(x => x.Id == form.attr("data"));
 
-    var li = form.parent("li");
+    let li = form.parent("li");
 
     let link = deleteQuestionLink;
     fetch(link, {
@@ -256,8 +211,8 @@ function onDeleteQuestion(args) {
 }
 
 function checkCreateQuestionButton() {
-    var questionButton = document.getElementById("CreateQButton");
-    var isHidden = initialQuestions.length >= maxQuestionCount;
+    let questionButton = document.getElementById("CreateQButton");
+    let isHidden = initialQuestions.length >= maxQuestionCount;
     if (isHidden) {
         questionButton.setAttribute('hidden', true);
     }
@@ -268,19 +223,18 @@ function checkCreateQuestionButton() {
 
 function sortableUpdated(event, ui) {
 
-    var sortable = $("#sortable");
-    var idsInOrder = sortable.sortable("toArray");
+    let sortable = $("#sortable");
+    let idsInOrder = sortable.sortable("toArray");
     console.log(event.target.id);
 
-    var reorderInfoArr = [];
+    let reorderInfoArr = [];
     idsInOrder.forEach((value, index) => {
-        var qId = sortable.find(`#${value}`).find("form").attr("data");
+        let qId = sortable.find(`#${value}`).find("form").attr("data");
         reorderInfoArr.push({ "QId": qId, orderIndex: index });
     });
-
-    //console.log('change order link: ' + changeOrderLink);
     
-    var link = changeOrderLink;
+    
+    let link = changeOrderLink;
     fetch(link, {
         method: 'POST',
         headers: getAjaxHeaders(),
