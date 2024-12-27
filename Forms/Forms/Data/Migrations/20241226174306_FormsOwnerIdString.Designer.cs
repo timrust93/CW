@@ -4,6 +4,7 @@ using Forms.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Forms.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241226174306_FormsOwnerIdString")]
+    partial class FormsOwnerIdString
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -33,7 +36,10 @@ namespace Forms.Data.Migrations
                     b.Property<bool>("BoolAnswer")
                         .HasColumnType("bit");
 
-                    b.Property<int>("FormsId")
+                    b.Property<int>("FormId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("FormsId")
                         .HasColumnType("int");
 
                     b.Property<int>("IntAnswer")
@@ -390,9 +396,7 @@ namespace Forms.Data.Migrations
                 {
                     b.HasOne("Forms.Data.Forms", null)
                         .WithMany("Answers")
-                        .HasForeignKey("FormsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("FormsId");
                 });
 
             modelBuilder.Entity("Forms.Data.Question", b =>

@@ -1,4 +1,6 @@
 using Forms.Data;
+using Forms.Services;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using System.ComponentModel.DataAnnotations;
@@ -16,15 +18,17 @@ namespace Forms.Pages.App
             public string Description { get; set; }
         }
 
-        private ApplicationDbContext _dbContext;
+        private readonly TemplateService _templateService;
+        private readonly UserManager<ApplicationUser> _userManager;
 
         [BindProperty]
         [Required]        
         public TemplateCreatePoco TemplateInit { get; set; }
 
-        public CreateTemplateModel(ApplicationDbContext dbContext)
+        public CreateTemplateModel(TemplateService templateService, UserManager<ApplicationUser> userManager)
         {
-            _dbContext = dbContext;
+            _templateService = templateService;
+            _userManager = userManager;
         }
 
         public void OnGet()
@@ -41,16 +45,14 @@ namespace Forms.Pages.App
             }
             else
             {
-                string id = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-                Template template = new Template();
-                string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                template.OwnerId = userId;
+                Template template = new Template();                
+                template.OwnerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                template.Author = _userManager.GetUserName(User);
                 template.Title = TemplateInit.Title;
                 template.Description = TemplateInit.Description;
+                template.LastModified = DateTime.Now;
 
-                _dbContext.Templates.Add(template);
-                _dbContext.SaveChanges();
+                _templateService.AddNewTemplate(template);                
 
                 return RedirectToPage("PersonalPage");
                 //return RedirectToPage("TemplateManagement");

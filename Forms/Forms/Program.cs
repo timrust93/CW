@@ -18,7 +18,13 @@ builder.Services.AddDefaultIdentity<ApplicationUser>()
 builder.Services.AddRazorPages();
 
 builder.Services.AddScoped<TemplateService>();
+builder.Services.AddScoped<FormsService>();
 builder.Services.AddAntiforgery(o => o.HeaderName = AuthHelper.ANTI_FORGERY);
+
+builder.Services.AddLogging(logging =>
+{
+    logging.AddFilter("Microsoft.EntityFrameworkCore", LogLevel.Warning);
+});
 
 var app = builder.Build();
 

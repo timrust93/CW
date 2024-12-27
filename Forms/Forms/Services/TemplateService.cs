@@ -21,7 +21,13 @@ namespace Forms.Services
         {
             Template? template = _appDbContext.Templates.Include(t => t.QuestionList)
                 .FirstOrDefault(x => x.Id == id);
-            return template;            
+            return template;
+        }
+
+        public void AddNewTemplate(Template template)
+        {   
+            template.LastModified = DateTime.Now;
+            _appDbContext.Templates.Add(template);
         }
 
         public List<QuestionTypeInfo> GetQuestionTypeCounts(Template template)

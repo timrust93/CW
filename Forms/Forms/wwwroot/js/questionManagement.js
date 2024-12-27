@@ -55,7 +55,9 @@ function createQuestionForm(title = "", description = "") {
     $(select).find("option:first").prop("disabled", true);
 
 
+
     $(select).selectmenu();
+    $(select).selectmenu("option", "disabled", true);
     $(select).selectmenu({
         open: function (event, ui) { onQTypeDropdownOpen(event, ui) },
         select: function (event, ui) { onQTypeDropdownChosen(event, ui) },
@@ -78,8 +80,7 @@ function createQuestionForm(title = "", description = "") {
 
     let spans = form.querySelectorAll(".templateValidation");
     spans[0].setAttribute("data-valmsg-for", `selectQType[${index}]`);
-    spans[1].setAttribute("data-valmsg-for", `QuestionList[${index}].Title`);
-    spans[2].setAttribute("data-valmsg-for", `QuestionList[${index}].Description`);
+    spans[1].setAttribute("data-valmsg-for", `QuestionList[${index}].Title`);    
 
     let buttons = form.querySelectorAll("button");
     buttons.forEach(x => x.setAttribute("data", index));
@@ -156,9 +157,12 @@ function onSaveQuestion(args) {
 
     let questionData = initialQuestions.find(x => x.Id == form.attr("data"));
     let questionClone = { ...questionData };
-    questionClone.Type = data[0].value;
-    questionClone.Title = data[1].value;
-    questionClone.Description = data[2].value;
+    questionClone.Type = form.find("select").val();
+    questionClone.Title = data[0].value;
+    questionClone.Description = data[1].value;
+
+    //console.log("data 0: " + data[0].value);
+    //console.log("data 1: " + data[1].value);
 
 
     let link = saveQuestionLink;

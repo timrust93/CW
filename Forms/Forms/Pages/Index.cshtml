@@ -5,9 +5,52 @@
 }
 
 <div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+    <h1 class="display-4">Questionnaire Templates</h1>
 </div>
+
+
 <div>
-    <ejs-calendar id="calendar"></ejs-calendar>
+    <ejs-grid id="TemplateGrid" dataSource="@Model.TemplateList" allowSorting="true" allowSelection="false">
+        <e-grid-editSettings></e-grid-editSettings>
+        <e-grid-columns>
+            <e-grid-column field="Title"></e-grid-column>
+            <e-grid-column field="Description"></e-grid-column>
+            <e-grid-column field="Author"></e-grid-column>
+            <e-grid-column template="#view"></e-grid-column>
+        </e-grid-columns>
+    </ejs-grid>
 </div>
+
+<script id="view" type="text/x-template">
+    <button class="btn btn-outline-primary btn-sm" onclick="onView(this)">
+        Open
+    </button>
+</script>
+
+
+<script>
+    function getGridRowOfButton(target, gridId) {
+        var rowElement = target.closest('tr');
+        var rowIndex = parseInt(rowElement.getAttribute('data-rowindex'), 10);
+        const grid = document.querySelector(gridId).ej2_instances[0];
+        let gridRow = grid.getRowsObject()[rowIndex];
+        return gridRow;
+    }
+
+
+    function onView(target)
+    {
+        let gridRow = getGridRowOfButton(target, "#TemplateGrid");
+        var rowData = gridRow.data.Id;
+        window.location.href = `App/TemplateView?handler=Page&templateId=${rowData}`;
+        //window.location.href = `App/TemplateView&templateId=${rowData}`;
+    }
+</script>
+
+
+<style>
+    .e-grid .e-focus button {
+        outline: none !important;
+        box-shadow: none !important;
+    }
+</style>

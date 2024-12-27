@@ -1,0 +1,86 @@
+﻿@page
+@model AnswerFormModel
+@{
+}
+
+<h1>Answer form</h1>
+
+<div>
+
+    <form id="answer" method="post" autocomplete="off">
+    
+    @{
+            <input hidden asp-for="FormDownloadTime" />        
+            for (int i = 0; i < Model.Questions.Count; i++)
+            {
+                Question question = Model.Questions[i];
+                AnswerFormModel.AnswerPOCO answer = Model.Answers[i];
+                <input hidden asp-for=Answers[i].QuestionId />
+                <input hidden asp-for=Answers[i].QuestionType/>
+
+                <div class=".container p-2 border mb-2">               
+                    <div>
+                        <label class="lead mb-0">@(i+1). @(question.Title)</label>
+                        @if (answer.IsNew)
+                        {
+                            <div class="d-inline bg-primary text-white rounded small" style="padding: 2px; font-size:12px; vertical-align: super; ">new</div>
+                        }                        
+                    </div>
+                    <div>
+                        <label style="margin-left:19px">@(question.Description)</label>
+                    </div>
+                    @if (question.LastModified > answer.LastModified || !answer.IsValid)
+                    {
+                    <div class="alert alert-danger" role="alert">
+                        <p class="mb-0">Warning!</p>
+                        <p class="mb-0">This question was changed since last answer submitted. Resubmit form to confirm that answer is correct</p>
+                    </div>
+                    }
+
+                    <div style="padding-left: 19px">
+                        @switch (question.Type)
+                        {
+                            case 0:
+                                <input asp-for="Answers[i].StringAnswer" type="text" class="form-control" 
+                                    required data-val-required="Please enter a valid answer." />
+                                <span asp-validation-for="Answers[i].StringAnswer" class="text-danger"></span>
+                                break;
+                            case 1:
+                                <textarea asp-for="Answers[i].StringAnswer" class="form-control" rows="4" required 
+                                    data-val-required="Please enter a valid answer."></textarea>
+                                <span asp-validation-for="Answers[i].StringAnswer" class="text-danger"></span>
+                                break;
+                            case 2:
+                                <input type="number" asp-for="Answers[i].IntAnswer" class="form-control" required />
+                                <span asp-validation-for="Answers[i].IntAnswer" class="text-danger"></span>
+                                break;
+                            case 3:
+                                <input type="checkbox" asp-for="Answers[i].BoolAnswer" class="form-check-input" />
+                                <span asp-validation-for="Answers[i].IntAnswer" class="text-danger"></span>
+                                break;
+                            default:
+                                break;
+                        }
+                    </div>
+                </div>
+            }            
+            <button id="create-submit" type="submit" class="btn btn-primary" style="float:right">Submit</button>
+    }
+    </form>        
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        $(function () {
+            $(window).keydown(function (e) {
+                if (e.keyCode == 13 && $(e.target)[0] != $("textarea")[0]) {
+                    e.preventDefault();
+                    return false;
+                }
+            });
+        })
+    </script>
+     
+}

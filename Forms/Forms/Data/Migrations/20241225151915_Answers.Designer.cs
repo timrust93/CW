@@ -4,6 +4,7 @@ using Forms.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Forms.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241225151915_Answers")]
+    partial class Answers
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -33,7 +36,10 @@ namespace Forms.Data.Migrations
                     b.Property<bool>("BoolAnswer")
                         .HasColumnType("bit");
 
-                    b.Property<int>("FormsId")
+                    b.Property<int>("FormId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("FormsId")
                         .HasColumnType("int");
 
                     b.Property<int>("IntAnswer")
@@ -41,9 +47,6 @@ namespace Forms.Data.Migrations
 
                     b.Property<DateTime>("LastModified")
                         .HasColumnType("datetime2");
-
-                    b.Property<bool>("NonValid")
-                        .HasColumnType("bit");
 
                     b.Property<int>("QuestionId")
                         .HasColumnType("int");
@@ -139,9 +142,8 @@ namespace Forms.Data.Migrations
                     b.Property<DateTime>("LastModified")
                         .HasColumnType("datetime2");
 
-                    b.Property<string>("OwnerId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<int>("OwnerId")
+                        .HasColumnType("int");
 
                     b.Property<int>("TemplateId")
                         .HasColumnType("int");
@@ -198,6 +200,9 @@ namespace Forms.Data.Migrations
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("CheckboxQLimit")
+                        .HasColumnType("int");
+
                     b.Property<string>("Description")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -212,9 +217,18 @@ namespace Forms.Data.Migrations
                     b.Property<DateTime>("LastModified")
                         .HasColumnType("datetime2");
 
+                    b.Property<int>("MultilineQLimint")
+                        .HasColumnType("int");
+
+                    b.Property<int>("NumberQLimit")
+                        .HasColumnType("int");
+
                     b.Property<string>("OwnerId")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("SingleLineQLimit")
+                        .HasColumnType("int");
 
                     b.Property<string>("Title")
                         .IsRequired()
@@ -390,9 +404,7 @@ namespace Forms.Data.Migrations
                 {
                     b.HasOne("Forms.Data.Forms", null)
                         .WithMany("Answers")
-                        .HasForeignKey("FormsId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("FormsId");
                 });
 
             modelBuilder.Entity("Forms.Data.Question", b =>

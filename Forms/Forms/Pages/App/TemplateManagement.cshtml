@@ -39,8 +39,10 @@
                     </select>
                     <div>
                         <span class="text-danger templateValidation" data-valmsg-replace="true"></span>
-                    </div>                    
+                    </div>                                           
+                    
                 </div>           
+                @* <input type="text" class="form-control" value="xx" /> *@
                 <label>Title:</label>
                 <input type="text" class="form-control"
                        data-name="Title"
@@ -50,10 +52,8 @@
             <div>
                 <label>Description:</label>
                 <textarea type="text" class="form-control"
-                       data-name="Description"
-                       data-val="true" data-val-required="The Description field is required." />
+                       data-name="Description"/>
                 </textarea>
-                <span class="text-danger templateValidation" data-valmsg-replace="true"></span>
             </div>
             <div>
                 <button type="button" data="" onclick="onSaveQuestion(this)">Save</button>
@@ -63,6 +63,7 @@
     </li>
 </template>
 
+<input type="text" disabled="true" class="form-control" value="xx" />
 
 @section Scripts
 {

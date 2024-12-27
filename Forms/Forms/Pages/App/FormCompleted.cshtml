@@ -1,0 +1,57 @@
+﻿@page
+@model FormCompletedModel
+@{
+}
+
+
+@{
+    if (Model.TemplateDeleted)
+    {
+        <div class ="alert alert-danger" role="alert">
+            <h1>Questionnaire was deleted by its author</h1>
+            <p>The original questionnaire was deleted by the author and does not exist anymore.</p>
+        </div>
+        return;
+    }
+    if (Model.QuestionDeleted)
+    {
+        <div class="alert alert-warning" role="alert">
+            <h1>Warning!</h1>
+            <p>Some questions of original questionnaire were deleted by their author while you were answering.</p>
+        </div>
+    }
+    if (Model.QuestionDeleted && Model.QuestionsMayBeenAdded)
+    {
+        <div class="alert alert-warning" role="alert">
+            <h1>Warning!</h1>
+            <p>There is a chance that new questions added.</p>
+        </div>
+    }
+    if (Model.QuestionModified)
+    {
+        <div class="alert alert-warning" role="alert">
+            <h1>Warning!</h1>
+            <p>Some questions of original questionnaire were changed by their author while you were answering.
+            The answers may be irrelevant now</p>
+        </div>
+    }
+    if (Model.QuestionsMayBeenAdded && !Model.QuestionDeleted)
+    {
+        <div class="alert alert-warning" role="alert">
+            <h1>Warning!</h1>
+            <p>
+                New questions were added, while you were answering.
+            </p>
+        </div>
+        return;
+    }    
+    if (!Model.QuestionDeleted && !Model.QuestionModified)
+    {
+        <div class="alert alert-success" role="alert">
+            <h1>Nice!</h1>
+            <p>
+                You have successfully submitted the form
+            </p>
+        </div>
+    }
+}
