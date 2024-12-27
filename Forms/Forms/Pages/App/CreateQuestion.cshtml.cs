@@ -6,6 +6,7 @@ using Forms.Model;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.ComponentModel.DataAnnotations;
 using NuGet.Protocol;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace Forms.Pages.App
 {
@@ -58,10 +59,17 @@ namespace Forms.Pages.App
                 Console.WriteLine("Model state is not valid");
                 return Page();                
             }
-
             Template template = _templateService.GetTemplateById(TemplateId);
+
+            if (_templateService.GetQuestionTypeLeftCount(template, QuestionTypeInfo.Id) == 0)
+            {
+                return BadRequest("REJECTED for data violation");
+            }
+            
             Question.TemplateId = template.Id;
             Question.OrderIndex = template.QuestionList.Count;
+            Question.Description = string.Empty;
+            Question.Type = QuestionTypeInfo.Id;
             template.QuestionList.Add(Question);
             _dbContext.SaveChanges();
 

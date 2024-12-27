@@ -10,7 +10,7 @@
         <input hidden asp-for="TemplateId"/>
         <div class="form-group">
             <label class="form-label">Question Type</label>
-            <select class="form-control dropdown" asp-for="QuestionTypeInfo"
+            <select class="form-control dropdown" asp-for="QuestionTypeInfo.Id"
                     asp-items="Model.QuestionTypesSelect">
                 <option value="" selected="true" disabled>Select option</option>
             </select>
@@ -24,7 +24,7 @@
         <span asp-validation-for="Question.Title" class="text-danger"></span>
         <div>
             <label asp-for="Question.Description" class="form-label">Description</label>
-            <textarea asp-for="Question.Description" class="form-control" rows="5"></textarea>
+            <textarea asp-for="Question.Description" class="form-control" data-val="false" rows="5"></textarea>
         </div>
         <br />
         <button id="create-submit" type="submit" class="btn btn-primary" style="float:right">Create</button>
