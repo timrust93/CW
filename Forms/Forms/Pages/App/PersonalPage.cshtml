@@ -13,12 +13,12 @@
             <e-content-template>
                 <div>
                     <div class="e-tab-header">
-                        <div>Templates</div>
-                        <div>Calendar</div>                              
+                        <div>My templates</div>
+                        <div>My fomrs</div>                              
                     </div>
                     <div class="e-content">
                         <div>
-                            <ejs-grid id="TemplateGrid" dataSource="@Model.Templates" allowSorting="true" allowSelection="false">
+                            <ejs-grid id="TemplateGrid" dataSource="@Model.TemplateDisplayList" allowSorting="true" allowSelection="false">
                                 <e-grid-editSettings></e-grid-editSettings>
                                 <e-grid-columns>
                                     <e-grid-column field="Title"></e-grid-column>
@@ -34,7 +34,16 @@
                             </div>
                         </div>
                         <div>
-                            <ejs-calendar id="cal"></ejs-calendar>
+                            <ejs-grid id="FormGrid" dataSource="@Model.FormDisplayList" allowSorting="true" allowSelection="false">
+                                <e-grid-editSettings></e-grid-editSettings>
+                                <e-grid-columns>
+                                    <e-grid-column field="Title"></e-grid-column>
+                                    <e-grid-column field="Description"></e-grid-column>
+                                    <e-grid-column field="Author" headerText="Template by"></e-grid-column>
+                                    <e-grid-column template="#formEdit"></e-grid-column>
+                                    <e-grid-column template="#formDelete"></e-grid-column>
+                                </e-grid-columns>
+                            </ejs-grid>
                         </div>
                     </div>
                 </div>
@@ -49,7 +58,7 @@
 
 
 <script id="templateEdit" type="text/x-template">
-    <button class="btn btn-outline-primary btn-sm" onclick="onEdit(this)">
+    <button class="btn btn-outline-primary btn-sm" onclick="onEditTemplate(this)">
         View
     </button>
 </script>
@@ -60,6 +69,17 @@
     </button>
 </script>
 
+<script id="formEdit" type="text/x-template">
+    <button class="btn btn-outline-primary btn-sm" onclick="onEditForm(this)">
+        View
+    </button>
+</script>
+
+<script id="formDelete" type="text/x-template">
+    <button class="btn btn-outline-danger btn-sm" onclick="onDeleteForm(this)">
+        Delete
+    </button>
+</script>
 
 
 <div class="modal" tabindex="-1" id="exampleModalLong">
@@ -103,21 +123,14 @@
         return gridRow;
     }
 
-    function onEdit(target) {
+    function onEditTemplate(target) {
         let gridRow = getGridRowOfButton(target, "#TemplateGrid");
         var rowData = gridRow.data.Id;
-        console.log(rowData);
-
         window.location.href = `TemplateManagement?id=${rowData}`;
-        return;
-        
-        var form = document.getElementById('goToTemplateForm');
-        document.getElementById('goToTemplateFormId').value = rowData;
-        form.action = "TemplateManagement";
-        form.submit();
+        return;                
     }
 
-    function onDelete(target)
+    function onDeleteTemplate(target)
     {
         var rowData = getGridRowOfButton(target, "#TemplateGrid");
         console.log(rowData);
@@ -135,5 +148,15 @@
         });
 
         modal.modal('toggle'); 
+    }
+
+    function onEditForm(target) {
+        let gridRow = getGridRowOfButton(target, "#FormGrid");
+        var rowData = gridRow.data.TemplateId;
+        window.location.href = `AnswerForm?templateId=${rowData}`;
+    }
+
+    function onDeleteForm(target){
+
     }
 </script>

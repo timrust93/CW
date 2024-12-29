@@ -40,6 +40,16 @@ namespace Forms.Services
             return form;
         }
 
+        public List<Data.Forms> GetFormList(int templateId)
+        {            
+            return _appDbContext.Forms.Where(x => x.TemplateId == templateId).ToList();         
+        }
+
+        public List<Data.Forms> GetFormList(string ownerId)
+        {
+            return _appDbContext.Forms.Where(x => x.OwnerId == ownerId).ToList();
+        }
+
         public Answer? GetAnswer(Data.Forms? form, int questionId)
         {
             if (form == null)
