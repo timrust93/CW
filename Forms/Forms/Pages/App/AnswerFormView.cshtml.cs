@@ -14,6 +14,9 @@ namespace Forms.Pages.App
 
         public List<Question> Questions { get; set; }
         public List<Answer> Answers { get; set; }
+
+        public Template Template { get; set; }
+        public Data.Forms Form { get; set; }
         
 
         public AnswerFormViewModel(TemplateService templateService, FormsService formService)
@@ -28,6 +31,8 @@ namespace Forms.Pages.App
         {            
             Data.Forms? form = _formService.GetForm(id);
             Template template = _templateService.GetTemplateById(form.TemplateId);
+            Template = template;
+            Form = form;
 
             Questions = template.QuestionList.ToList();
             Questions.Sort((x, y) => x.OrderIndex.CompareTo(y.OrderIndex));

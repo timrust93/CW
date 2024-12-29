@@ -3,8 +3,23 @@
 @{
 }
 
-<h1>Answer form</h1>
+<h1 style="text-align:center">My answer form</h1>
 
+<h5 style="margin-top:20px">Description:</h5>
+<div class="border mt-4 mb-4 px-lg-3 pt-3">
+    <p class="lead">
+        @Model.Template.Title
+    </p>
+    <p class="fw-light">
+        @Model.Template.Description
+    </p>
+
+    <p class="fw-light fst-italic">author: @Model.Template.Author</p>
+</div>
+
+
+<h5>Questions:</h5>
+<br />
 <div>
 
     <form id="answer" method="post" autocomplete="off">
