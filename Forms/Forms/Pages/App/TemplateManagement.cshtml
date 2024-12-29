@@ -85,7 +85,6 @@
                     </div>                                           
                     
                 </div>           
-                @* <input type="text" class="form-control" value="xx" /> *@
                 <label>Title:</label>
                 <input type="text" class="form-control"
                        data-name="Title"
@@ -94,8 +93,8 @@
             </div>
             <div>
                 <label>Description:</label>
-                <textarea type="text" class="form-control"
-                       data-name="Description"/>
+                <textarea class="form-control"
+                       data-name="Description">
                 </textarea>
             </div>
             <div>
@@ -129,8 +128,22 @@
         var saveQuestionLink = "@Html.Raw(saveQuestionLink)";
         var antiForgeryKey = "@Html.Raw(antiForgeryKey)";
 
+        
         $(document).ready(function () {
             initializeQuestionManagement();
+
+            let forms = document.querySelectorAll("form");
+            for (i = 0; i < forms.length; i++) {
+                console.log(i + ": " + forms[i].id);
+                $(forms[i]).on('keydown', function (e) {
+                    console.log("target: " + e.target.id + " closest: " + e.target.closest("form").id);
+                    if (e.key === "Enter" &&
+                        e.target.tagName.toLowerCase() !== "textarea") {
+                        e.preventDefault(); // Prevent form submission
+                        return false;
+                    }
+                });
+            }
         });
     </script>
 
@@ -159,6 +172,15 @@
                 name, value
             }));
             console.log("form data: " + JSON.stringify(data));
+        }
+
+        function getAjaxHeaders() {
+            let antiforgeryName = "__RequestVerificationToken";
+            let antiForgeryVal = $("#form0").find(`input[name=${antiforgeryName}]`).val();
+            let headers = new Headers();
+            headers.append("Content-Type", "application/json");
+            headers.append(antiForgeryKey, antiForgeryVal);
+            return headers;
         }
     </script>
 }

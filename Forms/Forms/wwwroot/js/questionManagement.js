@@ -8,17 +8,7 @@ function initializeQuestionManagement() {
         $.validator.setDefaults({ ignore: [] });
         $.validator.unobtrusive.parse(`#form${index}`);
     });
-
-    let forms = document.querySelector('#sortable').querySelectorAll("form");
-    for (i = 0; i < forms.length; i++) {
-        $(forms[i]).on('keydown', function (e) {
-            if (e.key === "Enter" &&
-                ($(e.target)[0] != $("textarea")[0])) {
-                e.preventDefault(); // Prevent form submission
-                return false;
-            }
-        });
-    }
+    
     checkCreateQuestionButton();
 }
 
@@ -150,7 +140,6 @@ function onSaveQuestion(args) {
     let id = args.getAttribute('data');
     let form = $(`#form${id}`);
     let data = form.serializeArray();
-    console.log("form " + JSON.stringify(data));
 
     if (!form.valid())
         return;
@@ -160,10 +149,6 @@ function onSaveQuestion(args) {
     questionClone.Type = form.find("select").val();
     questionClone.Title = data[0].value;
     questionClone.Description = data[1].value;
-
-    //console.log("data 0: " + data[0].value);
-    //console.log("data 1: " + data[1].value);
-
 
     let link = saveQuestionLink;
     fetch(link, {
@@ -250,15 +235,6 @@ function sortableUpdated(event, ui) {
         .catch(error => {
             alert('Something went wrong');
         });
-}
-
-function getAjaxHeaders() {
-    let antiforgeryName = "__RequestVerificationToken";
-    let antiForgeryVal = $("#form0").find(`input[name=${antiforgeryName}]`).val();
-    let headers = new Headers();
-    headers.append("Content-Type", "application/json");
-    headers.append(antiForgeryKey, antiForgeryVal);
-    return headers;
 }
 
 
