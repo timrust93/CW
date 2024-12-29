@@ -177,5 +177,24 @@ namespace Forms.Pages.App
                 return new JsonResult(new { success = false, message = "Data violation" });
             }
         }
+
+        public JsonResult OnPostUpdateTemplateInfo([FromBody] TemplateCreatePoco templatePOCO, [FromQuery] int id)
+        {
+            Template template = _templateService.GetTemplateById(id);
+            if (!_templateService.IsAuthorized(User, template))
+            {
+                return new JsonResult(new { success = false, message = "Forbidden. Unauthorized" });
+            }
+            if (!ModelState.IsValid)
+            {
+                return new JsonResult(new { success = false, message = "Data violation" });
+            }
+
+            template.LastModified = DateTime.Now;
+            template.Title = templatePOCO.Title;
+            template.Description = templatePOCO.Description;
+            _dbContext.SaveChanges();
+            return new JsonResult(new { success = true, message = "Rows processed successfully!" });
+        }
     }
 }

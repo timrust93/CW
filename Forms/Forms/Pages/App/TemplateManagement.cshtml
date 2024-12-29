@@ -4,9 +4,11 @@
 @{
     var questionsJson = System.Text.Json.JsonSerializer.Serialize(Model.QuestionList);
     var questionTypesJson = System.Text.Json.JsonSerializer.Serialize(Model.QuestionTypeInfos);
+    var templateInfoJson = System.Text.Json.JsonSerializer.Serialize(Model.TemplateCreatePOCO);
     string changeOrderLink = $"TemplateManagement?handler=ChangeOrder&id={Model.TemplateId}";
     string saveQuestionLink = $"TemplateManagement?handler=SaveQuestion&id={Model.TemplateId}";
     string deleteQuestionLink = $"TemplateManagement?handler=DeleteQuestion&id={Model.TemplateId}";
+    string templateInfoUpdateLink = $"TemplateManagement?handler=UpdateTemplateInfo&id={Model.TemplateId}";
     string antiForgeryKey = authHelpers.AuthHelper.ANTI_FORGERY;
 }
 
@@ -18,7 +20,7 @@
 </span>
 <br /><br />
 
-<ejs-tab id="ej2Tab2">
+<ejs-tab id="ej2Tab2" selecting="tabSelecting">
     <e-tab-tabitems>
         <e-tab-tabitem>
             <e-content-template>
@@ -111,6 +113,14 @@
     </button>
 </script>
 
+<script type="text/javascript">
+    function tabSelecting(e) {
+        if (e.isSwiped) {
+            e.cancel = true; // Prevent tab selection on swipe
+        }
+    }
+</script>
+
 
 @section Scripts
 {
@@ -122,11 +132,13 @@
     <script>
         var initialQuestions = @Html.Raw(questionsJson);
         var questionTypes = @Html.Raw(questionTypesJson);
+        
         var maxQuestionCount = @Html.Raw(Model.MaxQuestionCount);
+
         var changeOrderLink = "@Html.Raw(changeOrderLink)";
         var deleteQuestionLink = "@Html.Raw(deleteQuestionLink)";
         var saveQuestionLink = "@Html.Raw(saveQuestionLink)";
-        var antiForgeryKey = "@Html.Raw(antiForgeryKey)";
+        var antiForgeryKey = "@Html.Raw(antiForgeryKey)";        
 
         
         $(document).ready(function () {
@@ -144,9 +156,8 @@
                     }
                 });
             }
-        });
+        });        
     </script>
-
 
 
     <script>
@@ -167,11 +178,36 @@
 
         function updateTemplateInfo()
         {
+            var templateInfoJson = @Html.Raw(templateInfoJson);
+            var templateInfoUpdateLink = "@Html.Raw(templateInfoUpdateLink)";
             let form = document.getElementById('SaveTemplateBasic');
+            if (!$(form).valid())
+            {
+                return;
+            }
             let data = Array.from(new FormData(form)).map(([name, value]) => ({
                 name, value
             }));
-            console.log("form data: " + JSON.stringify(data));
+            templateInfoJson.Title = data[0].value;
+            templateInfoJson.Description = data[1].value;
+
+            let link = templateInfoUpdateLink;
+            fetch(link, {
+                method: 'POST',
+                headers: getAjaxHeaders(),
+                body: JSON.stringify(templateInfoJson)
+            }).then(response => response.json())
+                .then(data => {
+                    if (data.success) {                        
+                        alert('saved');
+                    }
+                    else {
+                        alert(data.message);
+                    }
+                })
+                .catch(error => {
+                    alert('Something went wrong');
+                });
         }
 
         function getAjaxHeaders() {
