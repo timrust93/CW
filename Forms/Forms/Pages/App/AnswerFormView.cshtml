@@ -1,0 +1,56 @@
+﻿@page
+@model AnswerFormViewModel
+@{
+}
+
+<h1>Answers</h1>
+<div>
+    @for (int i = 0; i < Model.Questions.Count; i++)
+    {
+        var question = Model.Questions[i];
+        var answer = Model.Answers[i];
+
+        <div class="container p-2 border mb-2">
+            <div>
+                <label class="lead mb-0">@(i + 1). @(question.Title)</label>
+            </div>
+            <div>
+                <label style="margin-left:19px">@(question.Description)</label>
+            </div>
+
+            @if (answer == null)
+            {
+                <div class="bg-danger text-white p-1 mb-2 mt-2 rounded small">not answered (new question)</div>
+                @:</div>
+                continue;
+            }
+
+            @if (question.LastModified > answer.LastModified)
+            {
+                <div style="margin-left:19px" class="bg-warning p-1 mb-2 mt-2 text-white rounded small">outdated answer</div>
+            }
+
+            <div style="padding-left: 19px">
+                @switch (question.Type)
+                {
+                    case 0:
+                        <div class="form-control readonly-input">@answer.StringAnswer</div>
+                        break;
+                    case 1:
+                        <div class="form-control readonly-textarea" style="height: auto; min-height: 100px;">@answer.StringAnswer</div>
+                        break;
+                    case 2:
+                        <div class="form-control readonly-input">@answer.IntAnswer</div>
+                        break;
+                    case 3:
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" disabled @answer.BoolAnswer />
+                        </div>
+                        break;
+                    default:
+                        break;
+                }
+            </div>
+        </div>
+    }
+</div>

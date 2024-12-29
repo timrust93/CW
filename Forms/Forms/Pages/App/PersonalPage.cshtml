@@ -14,15 +14,15 @@
                 <div>
                     <div class="e-tab-header">
                         <div>My templates</div>
-                        <div>My fomrs</div>                              
+                        <div>My forms</div>                              
                     </div>
                     <div class="e-content">
                         <div>
                             <ejs-grid id="TemplateGrid" dataSource="@Model.TemplateDisplayList" allowSorting="true" allowSelection="false">
                                 <e-grid-editSettings></e-grid-editSettings>
                                 <e-grid-columns>
-                                    <e-grid-column field="Title"></e-grid-column>
-                                    <e-grid-column field="Description"></e-grid-column>
+                                    <e-grid-column field="Title" headertext="Title"></e-grid-column>
+                                    <e-grid-column field="Description" headerText="Description"></e-grid-column>
                                     <e-grid-column template="#templateEdit"></e-grid-column>
                                     <e-grid-column template="#temlateDelete"></e-grid-column>
                                 </e-grid-columns>

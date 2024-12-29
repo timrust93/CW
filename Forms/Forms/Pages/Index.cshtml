@@ -13,9 +13,9 @@
     <ejs-grid id="TemplateGrid" dataSource="@Model.TemplateList" allowSorting="true" allowSelection="false">
         <e-grid-editSettings></e-grid-editSettings>
         <e-grid-columns>
-            <e-grid-column field="Title"></e-grid-column>
-            <e-grid-column field="Description"></e-grid-column>
-            <e-grid-column field="Author"></e-grid-column>
+            <e-grid-column field="Title" headertext="Title"></e-grid-column>
+            <e-grid-column field="Description" headertext="Description"></e-grid-column>
+            <e-grid-column field="Author" headertext="Author"></e-grid-column>
             <e-grid-column template="#view"></e-grid-column>
         </e-grid-columns>
     </ejs-grid>

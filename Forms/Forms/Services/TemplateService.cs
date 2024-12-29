@@ -89,7 +89,7 @@ namespace Forms.Services
             else if (questionTypeId == 1)
                 return 1;
             else if (questionTypeId == 2)
-                return 1;
+                return 2;
             else if (questionTypeId == 3)
                 return 2;
             else

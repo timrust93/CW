@@ -14,10 +14,37 @@
     Here you manage template
 </div>
 
-<ul id="sortable">    
-</ul>
+<ejs-tab id="ej2Tab2">
+    <e-tab-tabitems>
+        <e-tab-tabitem>
+            <e-content-template>
+                <div>
+                    <div class="e-tab-header">
+                        <div>Questions</div>
+                        <div>Answered Forms</div>
+                    </div>
+                    <div class="e-content">
+                        <div>
+                            <ul id="sortable">
+                            </ul>
+                            <a class="btn btn-primary" id="CreateQButton" asp-page="CreateQuestion" asp-route-id="@Model.Template.Id">Create new</a>
+                        </div>
+                        <div>
+                            <ejs-grid id="FormGrid" dataSource="@Model.FormDisplayList" allowSorting="true" allowSelection="false">
+                                <e-grid-editSettings></e-grid-editSettings>
+                                <e-grid-columns>
+                                    <e-grid-column field="Author"></e-grid-column>
+                                    <e-grid-column template="#formView"></e-grid-column>
+                                </e-grid-columns>
+                            </ejs-grid>
+                        </div>
+                    </div>
+                </div>
+            </e-content-template>
+        </e-tab-tabitem>
+    </e-tab-tabitems>
+</ejs-tab>
 
-<a class="btn btn-primary" id="CreateQButton" asp-page="CreateQuestion" asp-route-id="@Model.Template.Id">Create new</a>
 
 
 <template id="questionTemplate">
@@ -60,6 +87,12 @@
     </li>
 </template>
 
+<script id="formView" type="text/x-template">
+    <button class="btn btn-outline-primary btn-sm" onclick="onViewForm(this)">
+        View
+    </button>
+</script>
+
 
 @section Scripts
 {
@@ -80,6 +113,25 @@
         $(document).ready(function () {
             initializeQuestionManagement();
         });
+    </script>
+
+
+
+    <script>
+        function getGridRowOfButton(target, gridId) {
+            var rowElement = target.closest('tr');
+            var rowIndex = parseInt(rowElement.getAttribute('data-rowindex'), 10);
+            const grid = document.querySelector(gridId).ej2_instances[0];
+            let gridRow = grid.getRowsObject()[rowIndex];
+            return gridRow;
+        }
+
+        function onViewForm(target)
+        {
+            let gridRow = getGridRowOfButton(target, "#FormGrid");
+            var rowData = gridRow.data.Id;
+            window.location.href = `AnswerFormView?id=${rowData}`;
+        }
     </script>
 }
 

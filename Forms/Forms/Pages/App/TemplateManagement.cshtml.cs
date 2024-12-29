@@ -23,7 +23,14 @@ namespace Forms.Pages.App
             public int OrderIndex { get; set; }
         }
 
+        public class FormDisplay
+        {
+            public string Author { get; set; } = string.Empty;
+            public int Id { get; set; }
+        }
+
         public List<Question> QuestionList { get; set; } = new List<Question>();
+        public List<FormDisplay> FormDisplayList { get; set; } = new List<FormDisplay>();
 
         [BindProperty]
         public List<QuestionTypeInfo> QuestionTypeInfos { get; set; } = new List<QuestionTypeInfo>();
@@ -32,13 +39,15 @@ namespace Forms.Pages.App
         public int MaxQuestionCount { get; set; }
         public int TemplateId { get; set; }
 
-        private ApplicationDbContext _dbContext;
-        private TemplateService _templateService;
+        private readonly ApplicationDbContext _dbContext;
+        private readonly TemplateService _templateService;
+        private readonly FormsService _formService;
 
-        public TemplateManagementModel(ApplicationDbContext dbContext, TemplateService templateService)
+        public TemplateManagementModel(ApplicationDbContext dbContext, TemplateService templateService, FormsService formService)
         {
             _dbContext = dbContext;
             _templateService = templateService;
+            _formService = formService;
         }
 
 
@@ -50,13 +59,27 @@ namespace Forms.Pages.App
             {
                 return BadRequest("Bad Request");
             }
-            if (Template != null)
+            if (Template == null)
             {
-                QuestionTypeInfos = _templateService.GetQuestionTypeCounts(Template);      
-                MaxQuestionCount = QuestionTypeInfos.Sum(x => x.MaxCount);
-                InitializeQuestionList(Template);
-                QuestionList.Sort((x, y) => x.OrderIndex.CompareTo(y.OrderIndex));                                                    
+                return NotFound();
             }
+            
+            QuestionTypeInfos = _templateService.GetQuestionTypeCounts(Template);      
+            MaxQuestionCount = QuestionTypeInfos.Sum(x => x.MaxCount);
+            InitializeQuestionList(Template);
+            QuestionList.Sort((x, y) => x.OrderIndex.CompareTo(y.OrderIndex));
+
+            var forms = _formService.GetFormList(Template.Id);
+            foreach (var form in forms)
+            {
+                FormDisplay formDisplay = new FormDisplay
+                {
+                    Author = form.Author,
+                    Id = form.Id,
+                };
+                FormDisplayList.Add(formDisplay);
+            }
+
             return Page();
         }
 
@@ -74,7 +97,8 @@ namespace Forms.Pages.App
         {
             Console.WriteLine("is valid model: " + ModelState.IsValid);
             Console.WriteLine(question.ToJson());
-            if (!_templateService.IsAuthorized(User, Template))
+            Template template = _templateService.GetTemplateById(id);
+            if (!_templateService.IsAuthorized(User, template))
             {
                 return new JsonResult(new { success = false, message = "Forbidden. Unauthorized" });
             }
@@ -84,8 +108,7 @@ namespace Forms.Pages.App
                 return new JsonResult(new { success = false, message = "Data violation" });
             }
             else
-            {
-                Template template = _templateService.GetTemplateById(id);
+            {                
                 template.LastModified = DateTime.Now;
                 Question originalQuestion = (template.QuestionList as List<Question>).Find(x => x.Id == question.Id);
                 originalQuestion.Title = question.Title;
@@ -99,14 +122,14 @@ namespace Forms.Pages.App
 
         public JsonResult OnPostDeleteQuestion([FromBody] Question question, [FromQuery] int id)
         {
-            if (!_templateService.IsAuthorized(User, Template))
+            Template template = _templateService.GetTemplateById(id);
+            if (!_templateService.IsAuthorized(User, template))
             {
                 return new JsonResult(new { success = false, message = "Forbidden. Unauthorized" });
             }
             Console.WriteLine("post delete handler");
             try
-            {
-                Template template = _templateService.GetTemplateById(id);
+            {                
                 template.LastModified = DateTime.Now;
                 (template.QuestionList as List<Question>)?.RemoveAll(x => x.Id == question.Id);
                 _dbContext.SaveChanges();
@@ -120,14 +143,13 @@ namespace Forms.Pages.App
 
         public JsonResult OnPostChangeOrder([FromBody] List<OrderChange> list, [FromQuery] int id)
         {
-            if (!_templateService.IsAuthorized(User, Template))
+            Template template = _templateService.GetTemplateById(id);
+            if (!_templateService.IsAuthorized(User, template))
             {
                 return new JsonResult(new { success = false, message = "Forbidden. Unauthorized" });
             }
             try
-            {
-                Template template = _templateService.GetTemplateById(id);
-
+            {                
                 for (int i = 0; i < list.Count; i++)
                 {
                     Question question = template.QuestionList.FirstOrDefault(x => x.Id == list[i].QId);
