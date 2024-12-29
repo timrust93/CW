@@ -11,6 +11,7 @@ using Forms.Services;
 using NuGet.Protocol;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
+using static Forms.Pages.App.CreateTemplateModel;
 
 namespace Forms.Pages.App
 {
@@ -29,12 +30,22 @@ namespace Forms.Pages.App
             public int Id { get; set; }
         }
 
+        public class TemplateCreatePoco
+        {
+            [Required]
+            public string Title { get; set; }
+            [Required]
+            public string Description { get; set; }
+        }
+
+
         public List<Question> QuestionList { get; set; } = new List<Question>();
         public List<FormDisplay> FormDisplayList { get; set; } = new List<FormDisplay>();
 
         [BindProperty]
         public List<QuestionTypeInfo> QuestionTypeInfos { get; set; } = new List<QuestionTypeInfo>();
         public Template Template { get; set; }
+        public TemplateCreatePoco TemplateCreatePOCO { get; set; }
 
         public int MaxQuestionCount { get; set; }
         public int TemplateId { get; set; }
@@ -63,7 +74,9 @@ namespace Forms.Pages.App
             {
                 return NotFound();
             }
-            
+
+            TemplateCreatePOCO = new TemplateCreatePoco { Title = Template.Title, Description =  Template.Description };
+
             QuestionTypeInfos = _templateService.GetQuestionTypeCounts(Template);      
             MaxQuestionCount = QuestionTypeInfos.Sum(x => x.MaxCount);
             InitializeQuestionList(Template);

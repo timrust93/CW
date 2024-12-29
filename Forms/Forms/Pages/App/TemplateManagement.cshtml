@@ -24,10 +24,25 @@
             <e-content-template>
                 <div>
                     <div class="e-tab-header">
+                        <div>Basic Info</div>
                         <div>Questions</div>
                         <div>Answered Forms</div>
                     </div>
                     <div class="e-content">
+                        <div>
+                            <form id="SaveTemplateBasic" method="POST">
+                                <label asp-for="TemplateCreatePOCO.Title" class="form-label">Title</label>
+                                <input asp-for="TemplateCreatePOCO.Title" class="form-control" />
+                                <span asp-validation-for="TemplateCreatePOCO.Title" class="text-danger"></span>
+                                <div>
+                                    <label asp-for="TemplateCreatePOCO.Description" class="form-label">Description</label>
+                                    <textarea asp-for="TemplateCreatePOCO.Description" class="form-control" rows="5"></textarea>
+                                    <span asp-validation-for="TemplateCreatePOCO.Description" class="text-danger"></span>
+                                </div>
+                                <br />
+                                <button type="button" class="btn btn-primary" onclick="updateTemplateInfo(this)" style="float:right">Save</button>
+                            </form>
+                        </div>
                         <div>
                             <ul id="sortable">
                             </ul>
@@ -135,6 +150,15 @@
             let gridRow = getGridRowOfButton(target, "#FormGrid");
             var rowData = gridRow.data.Id;
             window.location.href = `AnswerFormView?id=${rowData}`;
+        }
+
+        function updateTemplateInfo()
+        {
+            let form = document.getElementById('SaveTemplateBasic');
+            let data = Array.from(new FormData(form)).map(([name, value]) => ({
+                name, value
+            }));
+            console.log("form data: " + JSON.stringify(data));
         }
     </script>
 }
