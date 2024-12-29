@@ -7,17 +7,13 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using System.ComponentModel.DataAnnotations;
 using NuGet.Protocol;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Forms.Pages.App
 {
+    [Authorize]
     public class CreateQuestionModel : PageModel
     {
-        public CreateQuestionModel(ApplicationDbContext dbContext, TemplateService templateService)
-        {
-            _dbContext = dbContext;
-            _templateService = templateService;
-        }
-
         [BindProperty]
         public Question Question { get; set; }
 
@@ -27,10 +23,16 @@ namespace Forms.Pages.App
         [BindProperty]
         [Display(Name = "Question Type")]
         public QuestionTypeInfo QuestionTypeInfo { get; set; }
-        
 
-        private ApplicationDbContext _dbContext;
-        private TemplateService _templateService;
+        private readonly ApplicationDbContext _dbContext;
+        private readonly TemplateService _templateService;
+
+        public CreateQuestionModel(ApplicationDbContext dbContext, TemplateService templateService)
+        {
+            _dbContext = dbContext;
+            _templateService = templateService;            
+        }        
+               
 
         public ICollection<SelectListItem> QuestionTypesSelect { get; set; }  = new List<SelectListItem>();
 

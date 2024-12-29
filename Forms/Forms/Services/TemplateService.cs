@@ -1,6 +1,8 @@
 ﻿using Forms.Data;
 using Microsoft.EntityFrameworkCore;
 using Forms.Model;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Identity;
 
 namespace Forms.Services
 {
@@ -85,6 +87,20 @@ namespace Forms.Services
                 return 1;
             else
                 return 0;
+        }
+
+        public bool IsAuthorized(ClaimsPrincipal cp, Template template, UserManager<ApplicationUser> um)
+        {
+            
+            //Claim claim = new Claim("TestClaim", "");
+            //um.AddClaimAsync(c
+            //    laim);
+            //cp.HasClaim(x => x.Type == "TestClaim");
+            if (template.OwnerId == cp.FindFirstValue(ClaimTypes.NameIdentifier))
+            {
+                return true;
+            }
+            return false;
         }
     }
 }
