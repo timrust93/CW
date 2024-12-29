@@ -1,5 +1,6 @@
 using Forms.Data;
 using Forms.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -8,6 +9,7 @@ using System.Security.Claims;
 
 namespace Forms.Pages.App
 {
+    [Authorize]
     public class CreateTemplateModel : PageModel
     {
         public class TemplateCreatePoco

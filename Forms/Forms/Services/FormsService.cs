@@ -16,10 +16,10 @@ namespace Forms.Services
             _templateService = templateService;
         }
 
-        public Data.Forms? GetForm(int templateId)
+        public Data.Forms? GetForm(int templateId, string userId)
         {            
             var form = _appDbContext.Forms.Include(f => f.Answers)
-                .FirstOrDefault(x => x.TemplateId == templateId);
+                .FirstOrDefault(x => x.TemplateId == templateId && x.OwnerId == userId);
             if (form == null)
             {
                 return null;

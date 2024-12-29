@@ -36,9 +36,13 @@ namespace Forms.Pages.App
 
         public ICollection<SelectListItem> QuestionTypesSelect { get; set; }  = new List<SelectListItem>();
 
-        public void OnGet(int id)
-        {            
+        public IActionResult OnGet(int id)
+        {
             Template template = _templateService.GetTemplateById(id);
+            if (!_templateService.IsAuthorized(User, template))
+            {
+                return BadRequest("Forbidden. Unauthorized");
+            }
             Question question = new Question();
             TemplateId = template.Id;
             List<QuestionTypeInfo> questionTypeInfos = _templateService.GetQuestionTypeCounts(template);
@@ -49,20 +53,22 @@ namespace Forms.Pages.App
                     Disabled = qTypeInfo.Left <= 0
                 });
             }
-
+            return Page();
             
         }
 
         public IActionResult OnPost(int templateId)
         {
-
             if (ModelState.IsValid)
             {
                 Console.WriteLine("Model state is not valid");
                 return Page();                
             }
             Template template = _templateService.GetTemplateById(TemplateId);
-
+            if (!_templateService.IsAuthorized(User, template))
+            {
+                return BadRequest("Forbidden. Unauthorized");
+            }
             if (_templateService.GetQuestionTypeLeftCount(template, QuestionTypeInfo.Id) == 0)
             {
                 return BadRequest("REJECTED for data violation");

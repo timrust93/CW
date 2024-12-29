@@ -10,10 +10,11 @@ using Forms.Model;
 using Forms.Services;
 using NuGet.Protocol;
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Forms.Pages.App
 {
-    //[IgnoreAntiforgeryToken]
+    [Authorize]
     public class TemplateManagementModel : PageModel
     {
         public class OrderChange
@@ -41,17 +42,22 @@ namespace Forms.Pages.App
         }
 
 
-        public void OnGet(int id = 1002)
+        public IActionResult OnGet(int id = 1002)
         {
             TemplateId = id;
             Template = _templateService.GetTemplateById(id);
+            if (!_templateService.IsAuthorized(User, Template))
+            {
+                return BadRequest("Bad Request");
+            }
             if (Template != null)
             {
                 QuestionTypeInfos = _templateService.GetQuestionTypeCounts(Template);      
                 MaxQuestionCount = QuestionTypeInfos.Sum(x => x.MaxCount);
                 InitializeQuestionList(Template);
                 QuestionList.Sort((x, y) => x.OrderIndex.CompareTo(y.OrderIndex));                                                    
-            }           
+            }
+            return Page();
         }
 
         private void InitializeQuestionList(Template template)
@@ -68,6 +74,10 @@ namespace Forms.Pages.App
         {
             Console.WriteLine("is valid model: " + ModelState.IsValid);
             Console.WriteLine(question.ToJson());
+            if (!_templateService.IsAuthorized(User, Template))
+            {
+                return new JsonResult(new { success = false, message = "Forbidden. Unauthorized" });
+            }
 
             if (!ModelState.IsValid)
             {
@@ -89,6 +99,10 @@ namespace Forms.Pages.App
 
         public JsonResult OnPostDeleteQuestion([FromBody] Question question, [FromQuery] int id)
         {
+            if (!_templateService.IsAuthorized(User, Template))
+            {
+                return new JsonResult(new { success = false, message = "Forbidden. Unauthorized" });
+            }
             Console.WriteLine("post delete handler");
             try
             {
@@ -106,6 +120,10 @@ namespace Forms.Pages.App
 
         public JsonResult OnPostChangeOrder([FromBody] List<OrderChange> list, [FromQuery] int id)
         {
+            if (!_templateService.IsAuthorized(User, Template))
+            {
+                return new JsonResult(new { success = false, message = "Forbidden. Unauthorized" });
+            }
             try
             {
                 Template template = _templateService.GetTemplateById(id);

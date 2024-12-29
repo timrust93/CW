@@ -24,8 +24,7 @@ namespace Forms.Pages
         public IActionResult OnGet()
         {
             TemplateList = _templateService.GetTemplateList();
-            return Page();
-            return RedirectToPage("App/TemplateManagement");
+            return Page();            
         }
     }
 }

@@ -3,6 +3,7 @@ using Forms.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using System.Security.Claims;
 
 namespace Forms.Pages.App
 {
@@ -20,7 +21,8 @@ namespace Forms.Pages.App
 
         public void OnGet()
         {
-            Templates = _formSerivce.GetTemplateList();
+            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            Templates = _formSerivce.GetTemplateList(userId);
         }
     }
 }

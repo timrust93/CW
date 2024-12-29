@@ -14,9 +14,16 @@ namespace Forms.Services
             _appDbContext = appDbContext;
         }
 
-        public List<Template> GetTemplateList()
+        public List<Template> GetTemplateList(string id = "")
         {
-            return _appDbContext.Templates.ToList();
+            if (string.IsNullOrEmpty(id))
+            {
+                return _appDbContext.Templates.ToList();
+            }
+            else
+            {
+                return _appDbContext.Templates.Where(x => x.OwnerId == id).ToList();
+            }
         }
 
         public Template GetTemplateById(int id)
@@ -84,18 +91,13 @@ namespace Forms.Services
             else if (questionTypeId == 2)
                 return 1;
             else if (questionTypeId == 3)
-                return 1;
+                return 2;
             else
                 return 0;
         }
 
-        public bool IsAuthorized(ClaimsPrincipal cp, Template template, UserManager<ApplicationUser> um)
-        {
-            
-            //Claim claim = new Claim("TestClaim", "");
-            //um.AddClaimAsync(c
-            //    laim);
-            //cp.HasClaim(x => x.Type == "TestClaim");
+        public bool IsAuthorized(ClaimsPrincipal cp, Template template)
+        {                        
             if (template.OwnerId == cp.FindFirstValue(ClaimTypes.NameIdentifier))
             {
                 return true;

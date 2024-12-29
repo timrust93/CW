@@ -8,10 +8,12 @@ using System.Security.Claims;
 using System.ComponentModel.DataAnnotations;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Forms.Pages.App
 {
     [ResponseCache(Location = ResponseCacheLocation.None, Duration = -1, NoStore = true)]
+    [Authorize]
     public class AnswerFormModel : PageModel
     {
         public class AnswerPOCO : IValidatableObject
@@ -65,7 +67,7 @@ namespace Forms.Pages.App
 
 
         
-        public void OnGet(int templateId)
+        public IActionResult OnGet(int templateId)
         {            
             string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
@@ -73,7 +75,7 @@ namespace Forms.Pages.App
             Questions = Template.QuestionList.ToList();
             Questions.Sort((x, y) => x.OrderIndex.CompareTo(y.OrderIndex));
 
-            Data.Forms? form = _formService.GetForm(Template.Id);
+            Data.Forms? form = _formService.GetForm(Template.Id, userId);
 
             foreach (Question question in Questions)
             {
@@ -93,7 +95,8 @@ namespace Forms.Pages.App
             Console.WriteLine("get getTime initial: " + GetTime);
             GetTime = DateTime.Now;
             Console.WriteLine("get getTime: " + GetTime);
-            Console.WriteLine("on get download time: " + FormDownloadTime);            
+            Console.WriteLine("on get download time: " + FormDownloadTime);
+            return Page();
         }
 
         
@@ -112,14 +115,8 @@ namespace Forms.Pages.App
             {
                 return BadRequest("REJECTED. BAD REQUEST");
             }
-
             
             Template template = _templateService.GetTemplateById(templateId);
-            if (template == null)
-            {
-                return RedirectToPage("FormCompleted", new { questionsModified = false, questionsDeleted = false, 
-                    templateDeleted = true, questionsMayBeenAdded = false });
-            }
 
             SaveForm(template, out bool questionAtLeastDeleted, out bool questionAtLeastModified, 
                 out bool questionsMayBeenAdded);
@@ -139,8 +136,9 @@ namespace Forms.Pages.App
             questionAtLeastDeleted = false;
             questionAtLeastModified = false;
             questionAtLeastAdded = false;
+            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            var form = _formService.GetForm(template.Id);
+            var form = _formService.GetForm(template.Id, userId);
             if (form == null)
             {
                 form = _formService.AddForm(CreateNewFormForUser(template));
