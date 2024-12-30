@@ -169,14 +169,12 @@ namespace Forms.Pages.App
                     answer = new Answer();
                     CopyAnswerValues(answerPOCO, answer);
                     answer.FormsId = form.Id;
-                    answer.NonValid = isAnswerNonValid;
                     answer.LastModified = FormDownloadTime;
                     _formService.AddAnswer(answer, form);
                 }
                 else
                 {
                     CopyAnswerValues(answerPOCO, answer);
-                    answer.NonValid = isAnswerNonValid;
                     answer.LastModified = FormDownloadTime;
                     _formService.UpdateAnswer(answer);
                 }

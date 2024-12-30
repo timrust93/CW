@@ -44,7 +44,7 @@
                     <div>
                         <label style="margin-left:19px">@(question.Description)</label>
                     </div>
-                    @if (!answer.IsNew && (question.LastModified > answer.LastModified || !answer.IsValid))
+                    @if (!answer.IsNew && question.LastModified > answer.LastModified)
                     {
                     <div class="alert alert-danger" role="alert">
                         <p class="mb-0">Warning!</p>
