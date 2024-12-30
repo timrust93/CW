@@ -1,7 +1,9 @@
 ﻿using Forms.Data;
 using Forms.Data.Migrations;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.SqlServer.Server;
 using System.Collections.Generic;
+using System.Security.Claims;
 
 namespace Forms.Services
 {
@@ -56,6 +58,17 @@ namespace Forms.Services
             return _appDbContext.Forms.Where(x => x.OwnerId == ownerId).ToList();
         }
 
+        public void DeleteForm(Data.Forms form)
+        {
+            if (form == null)
+            {
+                throw new ArgumentNullException(nameof(form), "The form to delete cannot be null.");
+            }
+
+            _appDbContext.Forms.Remove(form);
+            _appDbContext.SaveChanges();
+        }
+
         public Answer? GetAnswer(Data.Forms? form, int questionId)
         {
             if (form == null)
@@ -83,6 +96,17 @@ namespace Forms.Services
             if (saveToDb)
                 _appDbContext.SaveChanges();
             return form;
+        }
+
+        public bool IsAuthorized(ClaimsPrincipal cp, Data.Forms form)
+        {
+            if (form == null || cp == null)
+                return false;
+            if (form.OwnerId == cp.FindFirstValue(ClaimTypes.NameIdentifier))
+            {
+                return true;
+            }
+            return false;
         }
     }
 }

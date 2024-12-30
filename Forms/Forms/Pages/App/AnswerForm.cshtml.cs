@@ -69,9 +69,13 @@ namespace Forms.Pages.App
         
         public IActionResult OnGet(int templateId)
         {            
-            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);            
 
             Template = _templateService.GetTemplateById(templateId);
+            if (Template == null)
+            {
+                return NotFound();
+            }
             Questions = Template.QuestionList.ToList();
             Questions.Sort((x, y) => x.OrderIndex.CompareTo(y.OrderIndex));
 
@@ -89,28 +93,14 @@ namespace Forms.Pages.App
                                 
                 answerPOCO.QuestionType = question.Type;
                 Answers.Add(CopyAnswerValues(answer, answerPOCO));
-                Console.WriteLine("q typpe: " + question.Type);
             }
-            //FormDownloadTime = DateTime.Now;
-            //Console.WriteLine("get getTime initial: " + GetTime);
-            //GetTime = DateTime.Now;
-            //Console.WriteLine("get getTime: " + GetTime);
-            //Console.WriteLine("on get download time: " + FormDownloadTime);
             return Page();
         }
 
         
 
         public IActionResult OnPost(int templateId)
-        {            
-            
-            //ModelState.Remove(nameof(FormDownloadTime));
-            //this.StateHasChanged();
-            //Console.WriteLine("on POST download time: " + FormDownloadTime);
-            //Console.WriteLine("post getTime: " + GetTime);
-            //Console.WriteLine("Model state valid: " + ModelState.IsValid);
-            // return BadRequest("REJECTED. BAD REQUEST");
-
+        {                        
             if (!ModelState.IsValid)
             {
                 return BadRequest("REJECTED. BAD REQUEST");

@@ -66,6 +66,17 @@ namespace Forms.Services
         {
             return template.QuestionList.Count(x => x.Type == questionTypeId);
         }
+
+        public void DeleteTemplate(Template template)
+        {
+            var forms = _appDbContext.Forms.Where(x => x.TemplateId == template.Id);
+            _appDbContext.Templates.Remove(template);
+            foreach (var form in forms)
+            {
+                _appDbContext.Remove(form);
+            }
+            _appDbContext.SaveChanges();
+        }
         
 
         public string GetQuestionTypeName(int questionTypeId)
@@ -97,7 +108,9 @@ namespace Forms.Services
         }
 
         public bool IsAuthorized(ClaimsPrincipal cp, Template template)
-        {                        
+        {
+            if (template == null || cp == null)
+                return false;
             if (template.OwnerId == cp.FindFirstValue(ClaimTypes.NameIdentifier))
             {
                 return true;

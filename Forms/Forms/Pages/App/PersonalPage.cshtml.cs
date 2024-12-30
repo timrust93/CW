@@ -7,6 +7,7 @@ using System.Security.Claims;
 
 namespace Forms.Pages.App
 {
+    //[IgnoreAntiforgeryToken]
     [Authorize]
     public class PersonalPageModel : PageModel
     {
@@ -48,6 +49,48 @@ namespace Forms.Pages.App
             Templates = _templateService.GetTemplateList(userId);
             Forms = _formService.GetFormList(userId);
             CreateDisplayData();
+        }
+
+        public IActionResult OnPostDeleteTemplate(int id)
+        {
+            Console.WriteLine("delete template id: " + id);
+            return RedirectToPage(this);
+            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            Template template = _templateService.GetTemplateById(id);
+            if (!_templateService.IsAuthorized(User, template))
+            {
+                return RedirectToPage("/Index");
+            }
+            return Page();
+        }
+
+        public JsonResult OnPostDelete(int id)
+        {
+            Console.WriteLine("pst dlt jsn: " + id);
+            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            Template template = _templateService.GetTemplateById(id);
+            if (!_templateService.IsAuthorized(User, template))
+            {
+                return new JsonResult(new { success = false, message = "Forbidden. Unauthorized" });
+            }
+
+            _templateService.DeleteTemplate(template);
+
+
+            return new JsonResult(new { success = true, message = "Rows processed successfully!" });
+        }
+
+        public JsonResult OnPostDeleteForm(int id)
+        {
+            Console.WriteLine("pst dlt form: " + id);
+            Data.Forms form = _formService.GetForm(id);
+            if (!_formService.IsAuthorized(User, form))
+            {
+                return new JsonResult(new { success = false, message = "Forbidden. Unauthorized" });
+            }
+            _formService.DeleteForm(form);
+            return new JsonResult(new { success = true, message = "Rows processed successfully!" });
+
         }
 
         private void CreateDisplayData()

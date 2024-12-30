@@ -1,11 +1,14 @@
 ﻿@page
 @using Syncfusion.EJ2.Buttons
 @using Syncfusion.EJ2.Navigations;
+@using authHelpers = Forms.AuthorizationHelpers; 
 @model PersonalPageModel
 @{
-
+    string antiForgeryKey = authHelpers.AuthHelper.ANTI_FORGERY;
 }
 
+<h1>Personal Page</h1>
+<br/>
 
 <ejs-tab id="ej2Tab2">
     <e-tab-tabitems>
@@ -52,19 +55,18 @@
     </e-tab-tabitems>
 </ejs-tab>
 
-<form id="goToTemplateForm" asp-antiforgery="true" action="TemplateManagement" method="QUERY">
-    <input type="hidden" name="id" id="goToTemplateFormId">
+<form id="antiForgery" asp-antiforgery="true" hidden>
 </form>
 
 
 <script id="templateEdit" type="text/x-template">
     <button class="btn btn-outline-primary btn-sm" onclick="onEditTemplate(this)">
-        View
+        Manage
     </button>
 </script>
 
 <script id="temlateDelete" type="text/x-template">
-    <button class="btn btn-outline-danger btn-sm" onclick="onDelete(this)">
+    <button class="btn btn-outline-danger btn-sm" onclick="onDeleteTemplate(this)">
         Delete
     </button>
 </script>
@@ -114,6 +116,17 @@
 </style>
 
 <script>
+
+    function getAjaxHeaders() {
+        var antiForgeryKey = "@Html.Raw(antiForgeryKey)"; 
+        let antiforgeryName = "__RequestVerificationToken";
+        let antiForgeryVal = $("#antiForgery").find(`input[name=${antiforgeryName}]`).val();        
+        let headers = new Headers();
+        headers.append("Content-Type", "application/json");
+        headers.append(antiForgeryKey, antiForgeryVal);
+        return headers;
+    }
+
     function getGridRowOfButton(target, gridId)
     {
         var rowElement = target.closest('tr');
@@ -132,16 +145,36 @@
 
     function onDeleteTemplate(target)
     {
-        var rowData = getGridRowOfButton(target, "#TemplateGrid");
+        var gridRow = getGridRowOfButton(target, "#TemplateGrid");
+        let rowData = gridRow.data.Id;
         console.log(rowData);
-
-        var modal = $("#exampleModalLong");         
-        const myModal = document.getElementById('exampleModalLong')
+        
+        var modal = $("#exampleModalLong");
+        modal.find(".modal-title").text("Delete Template");
+        const myModal = document.getElementById('exampleModalLong')        
         myModal.addEventListener('hidden.bs.modal', event => {
 
             var buttonId = document.activeElement.getAttribute('id');
             if (buttonId == 'deleteConfirm') {
-                console.log("delete confirmed");
+
+            let link = `PersonalPage?handler=Delete&id=${rowData}`;
+            console.log("link: " + link);
+            fetch(link, {
+                method: 'POST',
+                headers: getAjaxHeaders()                
+            }).then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        window.location.href = `PersonalPage`;
+                        alert('deleted');
+                    }
+                    else {
+                        alert(data.message);
+                    }
+                })
+                .catch(error => {
+                    alert('Something went wrong');
+                });
             }
             const newModal = myModal.cloneNode(true);
             myModal.parentNode.replaceChild(newModal, myModal);
@@ -156,7 +189,42 @@
         window.location.href = `AnswerForm?templateId=${rowData}`;
     }
 
-    function onDeleteForm(target){
+    function onDeleteForm(target) {
+        var gridRow = getGridRowOfButton(target, "#FormGrid");
+        let rowData = gridRow.data.Id;
 
+        var modal = $("#exampleModalLong");
+        modal.find(".modal-title").text("Delete Form");
+        const myModal = document.getElementById('exampleModalLong')
+
+        myModal.addEventListener('hidden.bs.modal', event => {
+
+            var buttonId = document.activeElement.getAttribute('id');
+            if (buttonId == 'deleteConfirm') {
+
+            let link = `PersonalPage?handler=DeleteForm&id=${rowData}`;
+
+            fetch(link, {
+                method: 'POST',
+                headers: getAjaxHeaders()                
+            }).then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        window.location.href = `PersonalPage`;
+                        alert('deleted');
+                    }
+                    else {
+                        alert(data.message);
+                    }
+                })
+                .catch(error => {
+                    alert('Something went wrong');
+                });
+            }
+            const newModal = myModal.cloneNode(true);
+            myModal.parentNode.replaceChild(newModal, myModal);
+        });
+
+        modal.modal('toggle');         
     }
 </script>

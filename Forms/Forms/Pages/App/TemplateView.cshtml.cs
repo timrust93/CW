@@ -22,6 +22,10 @@ namespace Forms.Pages.App
         {
             string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             Template = _templateService.GetTemplateById(templateId);
+            if (Template == null)
+            {
+                return NotFound();
+            }
 
             if (userId != null)
             {

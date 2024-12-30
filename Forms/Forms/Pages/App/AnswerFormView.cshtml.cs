@@ -30,9 +30,21 @@ namespace Forms.Pages.App
         public IActionResult OnGet(int id)
         {            
             Data.Forms? form = _formService.GetForm(id);
+            if (form == null)
+            {
+                return NotFound();
+            }
             Template template = _templateService.GetTemplateById(form.TemplateId);
             Template = template;
             Form = form;
+            if (template == null)
+            {
+                return NotFound();
+            }
+            if (!_templateService.IsAuthorized(User, template))
+            {
+                return BadRequest("Unauthorized");
+            }
 
             Questions = template.QuestionList.ToList();
             Questions.Sort((x, y) => x.OrderIndex.CompareTo(y.OrderIndex));
