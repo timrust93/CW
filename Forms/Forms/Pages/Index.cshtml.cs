@@ -23,6 +23,7 @@ namespace Forms.Pages
 
         public IActionResult OnGet()
         {
+            return RedirectToPage("App/SearchTest");
             TemplateList = _templateService.GetTemplateList();
             return Page();            
         }
