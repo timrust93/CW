@@ -91,11 +91,11 @@ namespace Forms.Pages.App
                 Answers.Add(CopyAnswerValues(answer, answerPOCO));
                 Console.WriteLine("q typpe: " + question.Type);
             }
-            FormDownloadTime = DateTime.Now;
-            Console.WriteLine("get getTime initial: " + GetTime);
-            GetTime = DateTime.Now;
-            Console.WriteLine("get getTime: " + GetTime);
-            Console.WriteLine("on get download time: " + FormDownloadTime);
+            //FormDownloadTime = DateTime.Now;
+            //Console.WriteLine("get getTime initial: " + GetTime);
+            //GetTime = DateTime.Now;
+            //Console.WriteLine("get getTime: " + GetTime);
+            //Console.WriteLine("on get download time: " + FormDownloadTime);
             return Page();
         }
 
@@ -104,10 +104,10 @@ namespace Forms.Pages.App
         public IActionResult OnPost(int templateId)
         {            
             
-            ModelState.Remove(nameof(FormDownloadTime));
+            //ModelState.Remove(nameof(FormDownloadTime));
             //this.StateHasChanged();
-            Console.WriteLine("on POST download time: " + FormDownloadTime);
-            Console.WriteLine("post getTime: " + GetTime);
+            //Console.WriteLine("on POST download time: " + FormDownloadTime);
+            //Console.WriteLine("post getTime: " + GetTime);
             //Console.WriteLine("Model state valid: " + ModelState.IsValid);
             // return BadRequest("REJECTED. BAD REQUEST");
 
