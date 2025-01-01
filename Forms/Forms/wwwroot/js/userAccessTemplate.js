@@ -56,7 +56,8 @@ function addUserToTemplate(user) {
         .then(data => {
             console.log(JSON.stringify(data));
             if (data.success) {
-                addUserToUI(user);                
+                addUserToUI(user);
+                alert("user added");
             }
             else {
                 alert(data.message);

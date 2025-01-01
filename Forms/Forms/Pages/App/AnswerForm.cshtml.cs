@@ -64,8 +64,6 @@ namespace Forms.Pages.App
             _formService = formService;
             _userManager = userManager;
         }
-
-
         
         public IActionResult OnGet(int templateId)
         {            
@@ -76,6 +74,12 @@ namespace Forms.Pages.App
             {
                 return NotFound();
             }
+            if (!Template.IsPublic &&
+                Template.TemplateAccessList.FirstOrDefault(x => x.UserId == userId) == null)
+            {
+                return RedirectToPage("/TemplatePrivacyRestricted");
+            }
+
             Questions = Template.QuestionList.ToList();
             Questions.Sort((x, y) => x.OrderIndex.CompareTo(y.OrderIndex));
 
@@ -107,6 +111,12 @@ namespace Forms.Pages.App
             }
             
             Template template = _templateService.GetTemplateById(templateId);
+            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            if (!template.IsPublic &&
+                    template.TemplateAccessList.FirstOrDefault(x => x.UserId == userId) == null)
+            {
+                return RedirectToPage("/TemplatePrivacyRestricted");
+            }
 
             SaveForm(template, out bool questionAtLeastDeleted, out bool questionAtLeastModified, 
                 out bool questionsMayBeenAdded);

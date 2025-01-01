@@ -31,7 +31,11 @@ namespace Forms.Pages.App
             {
                 return RedirectToPage("AnswerForm", new { templateId = templateId});
             }
-
+            
+            if (!Template.IsPublic)
+            {
+                return RedirectToPage("/TemplatePrivacyRestricted");
+            }
             
             Questions = Template.QuestionList.ToList();
             return Page();

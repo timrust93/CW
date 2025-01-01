@@ -245,7 +245,6 @@ namespace Forms.Pages.App
 
         public async Task<JsonResult> OnPostAddUserToTemplate([FromBody] UserAccessPOCO userAccess, int templateId)
         {
-            Console.WriteLine("add for: " + templateId);
             if (!ModelState.IsValid)
             {
                 return new JsonResult(new { success = false, message = "Data violation" });
@@ -272,22 +271,6 @@ namespace Forms.Pages.App
 
         public async Task<JsonResult> OnPostDeleteUserFromTemplate([FromBody] UserAccessPOCO userAccess, [FromQuery] int templateId)
         {
-            Console.WriteLine("delete for: " + templateId);
-            foreach (var state in ModelState)
-            {
-                var key = state.Key; // This is the name of the field
-                var value = state.Value;
-
-                if (value.Errors.Any())
-                {
-                    foreach (var error in value.Errors)
-                    {
-                        // You can log the error or inspect it
-                        Console.WriteLine($"Field: {key}, Error: {error.ErrorMessage}");
-                    }
-                }
-            }
-
             if (!ModelState.IsValid)
             {
                 return new JsonResult(new { success = false, message = "Data violation" });
@@ -308,7 +291,6 @@ namespace Forms.Pages.App
 
         public async Task<JsonResult> OnPostChangePrivacy(bool isPublic, int templateId)
         {
-            Console.WriteLine("on change privacey: " + isPublic + ". for: " + templateId);
             if (!ModelState.IsValid)
             {
                 return new JsonResult(new { success = false, message = "Data violation" });
