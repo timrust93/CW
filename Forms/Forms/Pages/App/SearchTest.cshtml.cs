@@ -13,7 +13,10 @@ namespace Forms.Pages.App
         {
             public int TemplateId { get; set; }
             public string UserId { get; set; }
+            public string Email { get; set; }
         }
+
+        public List<UserAccessPOCO> UsersList { get; set; } = new List<UserAccessPOCO>();
 
         private readonly ApplicationDbContext _appDbContext;
 
@@ -27,6 +30,11 @@ namespace Forms.Pages.App
             var useres = _appDbContext.Users;
             foreach (var user in useres)
             {
+                UsersList.Add(new UserAccessPOCO
+                {
+                    UserId = user.Id,
+                    Email = user.Email
+                });
                 Console.WriteLine("user: " + user);
             }
         }

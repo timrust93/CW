@@ -6,31 +6,22 @@
 <div class="border">
     <p class="m-2">Users who can answer:</p>
     <div id="listUWCMT" class="p-2">
-        <div class="border border-primary mb-2">
-            <span style="margin-left:6px;">some email</span>
-            <button class="btn btn-danger btn-sm m-2">X</button>
-        </div>
-        <div class="border border-primary mb-1">
-            <span style="margin-left:6px; font-size:13px">some email</span>
-            <button class="btn btn-danger btn-sm m-2">X</button>
-        </div>
+        @{
+            foreach (var user in Model.UsersList)
+            {
+                @await Html.PartialAsync("_AccessUserPartial", user);   
+            }            
+        }
     </div>
 </div>
 
+
 <template id="uatempl">
-    <div class="border border-primary mb-1" data="">
-        <span style="margin-left:6px; font-size:13px">some email</span>
-        <button class="btn btn-danger btn-sm m-2" onclick="onDeleteFromTemplate(this)">X</button>
-    </div>
+    @await Html.PartialAsync("_AccessUserPartial", new SearchTestModel.UserAccessPOCO())
 </template>
 
 <br/><br/>
-@* <div>
-    <div class="border border-primary">
-        <span>some email</span>
-        <button class="btn btn-danger">X</button>
-    </div>
-</div> *@
+
 
 <label>Add allowed users:</label>
 <input type="text" id="userSearch" placeholder="Search users..." />
@@ -116,10 +107,15 @@
 
         let list = document.getElementById("listUWCMT");
         list.appendChild(clone);
+
+        const searchInput = document.getElementById("userSearch");
+        searchInput.value = "";
     }
 
     function onDeleteFromTemplate(target) { 
-        let data = target.closest("div").getAttribute("data");
+        let list = document.getElementById("listUWCMT");
+        let element = target.closest("div");
+        let data = element.getAttribute("data");
         //console.log("data: " + data);
         
         let link = `SearchTest?handler=DeleteUserFromTemplate`
@@ -130,6 +126,7 @@
         }).then(response => response.json())
             .then(data => {
                 if (data.success) {
+                    list.removeChild(element);
                     alert('user deleted');
                 }
                 else {
