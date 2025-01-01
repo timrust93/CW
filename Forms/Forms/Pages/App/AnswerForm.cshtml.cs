@@ -74,7 +74,7 @@ namespace Forms.Pages.App
             {
                 return NotFound();
             }
-            if (!Template.IsPublic &&
+            if (!Template.IsPublic && Template.OwnerId != userId &&
                 Template.TemplateAccessList.FirstOrDefault(x => x.UserId == userId) == null)
             {
                 return RedirectToPage("/TemplatePrivacyRestricted");

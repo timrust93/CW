@@ -10,12 +10,13 @@
 
 
 <div>
-    <ejs-grid id="TemplateGrid" dataSource="@Model.TemplateList" allowSorting="true" allowSelection="false">
+    <ejs-grid id="TemplateGrid" dataSource="@Model.TemplateList" allowSorting="true" allowSelection="false" queryCellInfo="customizeCell">
         <e-grid-editSettings></e-grid-editSettings>
         <e-grid-columns>
             <e-grid-column field="Title" headertext="Title"></e-grid-column>
             <e-grid-column field="Description" headertext="Description"></e-grid-column>
             <e-grid-column field="Author" headertext="Author"></e-grid-column>
+            <e-grid-column field="IsPublic" headertext="Private"></e-grid-column>
             <e-grid-column template="#view"></e-grid-column>
         </e-grid-columns>
     </ejs-grid>
@@ -44,6 +45,19 @@
         var rowData = gridRow.data.Id;
         window.location.href = `App/TemplateView?handler=Page&templateId=${rowData}`;
         //window.location.href = `App/TemplateView&templateId=${rowData}`;
+    }
+
+    function customizeCell(args)
+    {
+        if (args.column.field === 'IsPublic')
+        {
+            if (args.data['IsPublic']) {
+                args.cell.innerHTML = "";                
+            }
+            else {
+                args.cell.innerHTML = "&#10003;";
+            }
+        }
     }
 </script>
 
