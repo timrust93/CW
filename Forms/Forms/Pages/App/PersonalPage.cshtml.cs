@@ -7,7 +7,6 @@ using System.Security.Claims;
 
 namespace Forms.Pages.App
 {
-    //[IgnoreAntiforgeryToken]
     [Authorize]
     public class PersonalPageModel : PageModel
     {
@@ -53,8 +52,6 @@ namespace Forms.Pages.App
 
         public IActionResult OnPostDeleteTemplate(int id)
         {
-            Console.WriteLine("delete template id: " + id);
-            return RedirectToPage(this);
             string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             Template template = _templateService.GetTemplateById(id);
             if (!_templateService.IsAuthorized(User, template))
