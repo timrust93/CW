@@ -49,12 +49,14 @@ namespace Forms.Pages.App
 
         public int MaxQuestionCount { get; set; }
         public int TemplateId { get; set; }
+        public List<UserAccessPOCO> UsersList { get; set; } = new List<UserAccessPOCO>();
 
         private readonly ApplicationDbContext _dbContext;
         private readonly TemplateService _templateService;
         private readonly FormsService _formService;
 
-        public TemplateManagementModel(ApplicationDbContext dbContext, TemplateService templateService, FormsService formService)
+        public TemplateManagementModel(ApplicationDbContext dbContext, TemplateService templateService,
+            FormsService formService)
         {
             _dbContext = dbContext;
             _templateService = templateService;
@@ -93,6 +95,8 @@ namespace Forms.Pages.App
                 FormDisplayList.Add(formDisplay);
             }
 
+            InitializeUsers();
+
             return Page();
         }
 
@@ -105,8 +109,8 @@ namespace Forms.Pages.App
         }
 
 
-
-        public JsonResult OnPostSaveQuestion([FromBody]Question question, [FromQuery] int id)
+        #region qeustions
+        public JsonResult OnPostSaveQuestion([FromBody] Question question, [FromQuery] int id)
         {
             Console.WriteLine("is valid model: " + ModelState.IsValid);
             Console.WriteLine(question.ToJson());
@@ -121,7 +125,7 @@ namespace Forms.Pages.App
                 return new JsonResult(new { success = false, message = "Data violation" });
             }
             else
-            {                
+            {
                 template.LastModified = DateTime.Now;
                 Question originalQuestion = (template.QuestionList as List<Question>).Find(x => x.Id == question.Id);
                 originalQuestion.Title = question.Title;
@@ -142,7 +146,7 @@ namespace Forms.Pages.App
             }
             Console.WriteLine("post delete handler");
             try
-            {                
+            {
                 template.LastModified = DateTime.Now;
                 (template.QuestionList as List<Question>)?.RemoveAll(x => x.Id == question.Id);
                 _dbContext.SaveChanges();
@@ -151,7 +155,7 @@ namespace Forms.Pages.App
             catch
             {
                 return new JsonResult(new { success = false, message = "Data violation" });
-            }            
+            }
         }
 
         public JsonResult OnPostChangeOrder([FromBody] List<OrderChange> list, [FromQuery] int id)
@@ -162,7 +166,7 @@ namespace Forms.Pages.App
                 return new JsonResult(new { success = false, message = "Forbidden. Unauthorized" });
             }
             try
-            {                
+            {
                 for (int i = 0; i < list.Count; i++)
                 {
                     Question question = template.QuestionList.FirstOrDefault(x => x.Id == list[i].QId);
@@ -196,5 +200,24 @@ namespace Forms.Pages.App
             _dbContext.SaveChanges();
             return new JsonResult(new { success = true, message = "Rows processed successfully!" });
         }
+
+        #endregion
+
+        #region user access
+        private void InitializeUsers()
+        {
+            var useres = _dbContext.Users;
+            foreach (var user in useres)
+            {
+                UsersList.Add(new UserAccessPOCO
+                {
+                    UserId = user.Id,
+                    Email = user.Email
+                });
+                Console.WriteLine("user: " + user);
+            }
+        }
+        #endregion
+
     }
 }

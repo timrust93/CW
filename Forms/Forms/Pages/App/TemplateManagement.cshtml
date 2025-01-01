@@ -1,6 +1,7 @@
 ﻿@page
 @model TemplateManagementModel
-@using authHelpers = Forms.AuthorizationHelpers; 
+@using authHelpers = Forms.AuthorizationHelpers;
+@using topNamespace = Forms;
 @{
     var questionsJson = System.Text.Json.JsonSerializer.Serialize(Model.QuestionList);
     var questionTypesJson = System.Text.Json.JsonSerializer.Serialize(Model.QuestionTypeInfos);
@@ -29,6 +30,7 @@
                         <div>Basic Info</div>
                         <div>Questions</div>
                         <div>Answered Forms</div>
+                        <div>Privacy</div>
                     </div>
                     <div class="e-content">
                         <div>
@@ -58,6 +60,45 @@
                                     <e-grid-column template="#formView"></e-grid-column>
                                 </e-grid-columns>
                             </ejs-grid>
+                        </div>
+                        <div>
+                            <div>
+                                @if(Model.Template.IsPublic)
+                                {
+                                    <p>This template is public</p>
+                                    <button class="btn btn-primary">Make Private</button>
+                                }
+                                else
+                                {
+                                    <p>This template is private</p>
+                                    <button class="btn btn-primary">Make Public</button>
+                                }
+                            </div>
+                            
+                            @if(!Model.Template.IsPublic)
+                            {
+                                <br />
+                                <br />
+                                <div class="border">
+                                    <p class="m-2">Users who can answer:</p>
+                                    <div id="listUWCMT" class="p-2">
+                                        @{
+                                            foreach (var user in Model.UsersList)
+                                            {
+                                                @await Html.PartialAsync("_AccessUserPartial", user)
+                                                ;
+                                            }
+                                        }
+                                    </div>
+                                </div>
+                                <br /><br />
+
+                                <label>Add allowed users:</label>
+                                <input type="text" id="userSearch" placeholder="Search users..." />
+                                <div id="userResultsCont" class="border" hidden>
+                                    <ul id="userResults" style="list-style-type:none"></ul>
+                                </div>
+                            }                            
                         </div>
                     </div>
                 </div>
@@ -107,6 +148,10 @@
     </li>
 </template>
 
+<template id="uatempl">
+    @await Html.PartialAsync("_AccessUserPartial", new topNamespace.Model.UserAccessPOCO())
+</template>
+
 <script id="formView" type="text/x-template">
     <button class="btn btn-outline-primary btn-sm" onclick="onViewForm(this)">
         View
@@ -128,6 +173,7 @@
     <script src="https://code.jquery.com/ui/1.13.0/jquery-ui.min.js"></script>
 
     <script src="/js/questionManagement.js"></script>
+    <script src="/js/userAccessTemplate.js"></script>
 
     <script>
         var initialQuestions = @Html.Raw(questionsJson);
@@ -246,5 +292,15 @@
     }
 
     ul#sortable li div {
+    }
+
+    .searchResLine {
+        background-color: transparent;
+        transition: background-color 0.3s;
+        cursor: pointer;
+    }
+
+    .searchResLine:hover {
+        background-color: lightgray;
     }
 </style>
