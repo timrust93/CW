@@ -97,13 +97,13 @@ namespace Forms.Services
         public int GetQuestionTypeLimit(int questionTypeId)
         {
             if (questionTypeId == 0)
-                return 1;
+                return 4;
             else if (questionTypeId == 1)
-                return 1;
+                return 4;
             else if (questionTypeId == 2)
-                return 2;
+                return 4;
             else if (questionTypeId == 3)
-                return 2;
+                return 4;
             else
                 return 0;
         }
