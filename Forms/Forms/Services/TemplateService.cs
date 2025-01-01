@@ -38,6 +38,7 @@ namespace Forms.Services
         {   
             template.LastModified = DateTime.Now;
             _appDbContext.Templates.Add(template);
+            _appDbContext.SaveChanges();
         }
 
         public List<QuestionTypeInfo> GetQuestionTypeCounts(Template template)

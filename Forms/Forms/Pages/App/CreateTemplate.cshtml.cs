@@ -43,6 +43,7 @@ namespace Forms.Pages.App
             Console.WriteLine("post form");
             if (!ModelState.IsValid)
             {
+               
                 return Page();
             }
             else
