@@ -13,6 +13,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using static Forms.Pages.App.CreateTemplateModel;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
 
 namespace Forms.Pages.App
 {
@@ -55,17 +56,19 @@ namespace Forms.Pages.App
         private readonly ApplicationDbContext _dbContext;
         private readonly TemplateService _templateService;
         private readonly FormsService _formService;
+        private readonly UserManager<ApplicationUser> _userManager;
 
         public TemplateManagementModel(ApplicationDbContext dbContext, TemplateService templateService,
-            FormsService formService)
+            FormsService formService, UserManager<ApplicationUser> userManager)
         {
             _dbContext = dbContext;
             _templateService = templateService;
             _formService = formService;
+            _userManager = userManager;
         }
 
 
-        public IActionResult OnGet(int id = 1002)
+        public async Task<IActionResult> OnGet(int id = 1002)
         {
             TemplateId = id;
             Template = _templateService.GetTemplateById(id);
@@ -96,7 +99,7 @@ namespace Forms.Pages.App
                 FormDisplayList.Add(formDisplay);
             }
 
-            InitializeUsers();
+            await InitializeUsers(Template);
 
             return Page();
         }
@@ -112,9 +115,7 @@ namespace Forms.Pages.App
 
         #region qeustions
         public JsonResult OnPostSaveQuestion([FromBody] Question question, [FromQuery] int id)
-        {
-            Console.WriteLine("is valid model: " + ModelState.IsValid);
-            Console.WriteLine(question.ToJson());
+        {                        
             Template template = _templateService.GetTemplateById(id);
             if (!_templateService.IsAuthorized(User, template))
             {
@@ -145,7 +146,6 @@ namespace Forms.Pages.App
             {
                 return new JsonResult(new { success = false, message = "Forbidden. Unauthorized" });
             }
-            Console.WriteLine("post delete handler");
             try
             {
                 template.LastModified = DateTime.Now;
@@ -205,44 +205,124 @@ namespace Forms.Pages.App
         #endregion
 
         #region user access
-        private void InitializeUsers()
-        {
-            var useres = _dbContext.Users;
-            foreach (var user in useres)
-            {
-                UsersList.Add(new UserAccessPOCO
+        private async Task InitializeUsers(Template template)
+        {            
+           foreach (var ta in template.TemplateAccessList)
+           {
+                var user = await _userManager.FindByIdAsync(ta.UserId);
+                if (user == null)
+                    continue;
+                UsersList.Add(new UserAccessPOCO()
                 {
-                    UserId = user.Id,
-                    Email = user.Email
+                    UserId = ta.UserId,
+                    Email = user.Email!
                 });
-                Console.WriteLine("user: " + user);
-            }
+           }
         }
 
-        public async Task<JsonResult> OnGetSearchUsers(string query)
+        public async Task<JsonResult> OnGetSearchUsers(string query, int templateId)
         {
+            if (!ModelState.IsValid)
+            {
+                return new JsonResult(new { success = false, message = "Data violation" });
+            }
+            Template template = _templateService.GetTemplateById(templateId);            
+            if (!_templateService.IsAuthorized(User, template))
+            {
+                return new JsonResult(new { success = false, message = "Not authorized" });
+            }            
+
             var users = await _dbContext.Users
-                .Where(u => u.Email.Contains(query)).OrderBy(x => x.Email)
+                .Where(u => u.Email.Contains(query) && u.Email != template.Author)
+                .OrderBy(x => x.Email)
                 .Take(10) // Limit the results
-                .Select(u => new { u.Id, u.Email })
+                .Select(u => new { UserId = u.Id, u.Email })
                 .ToListAsync();
+            
 
             return new JsonResult(users);
         }
 
-        public async Task<JsonResult> OnPostAddUserToTemplate([FromBody] UserAccessPOCO userAccess)
+        public async Task<JsonResult> OnPostAddUserToTemplate([FromBody] UserAccessPOCO userAccess, int templateId)
         {
-            //Console.WriteLine("trying to add");
-            Console.WriteLine("json: " + userAccess.ToJson());
+            Console.WriteLine("add for: " + templateId);
+            if (!ModelState.IsValid)
+            {
+                return new JsonResult(new { success = false, message = "Data violation" });
+            }
+
+            Template template = _templateService.GetTemplateById(templateId);
+            if (!_templateService.IsAuthorized(User, template))
+            {
+                return new JsonResult(new { success = false, message = "Not authorized" });
+            }
+
+            TemplateAccess templateAccess = template.TemplateAccessList.FirstOrDefault(x => x.UserId == userAccess.UserId);
+            if (templateAccess != null)
+            {
+                return new JsonResult(new { success = false, message = "This user already has access" });
+            }            
+            templateAccess = new TemplateAccess();
+            templateAccess.TemplateId = templateId;
+            templateAccess.UserId = userAccess.UserId;
+            template.TemplateAccessList.Add(templateAccess);
+            await _dbContext.SaveChangesAsync();            
             return new JsonResult(new { success = true, message = "User added" });
         }
 
-        public async Task<JsonResult> OnPostDeleteUserFromTemplate([FromBody] UserAccessPOCO userAccess)
+        public async Task<JsonResult> OnPostDeleteUserFromTemplate([FromBody] UserAccessPOCO userAccess, [FromQuery] int templateId)
         {
-            Console.WriteLine("json delete: " + userAccess.ToJson());
+            Console.WriteLine("delete for: " + templateId);
+            foreach (var state in ModelState)
+            {
+                var key = state.Key; // This is the name of the field
+                var value = state.Value;
+
+                if (value.Errors.Any())
+                {
+                    foreach (var error in value.Errors)
+                    {
+                        // You can log the error or inspect it
+                        Console.WriteLine($"Field: {key}, Error: {error.ErrorMessage}");
+                    }
+                }
+            }
+
+            if (!ModelState.IsValid)
+            {
+                return new JsonResult(new { success = false, message = "Data violation" });
+            }
+            Template template = _templateService.GetTemplateById(templateId);
+            if (!_templateService.IsAuthorized(User, template))
+            {
+                return new JsonResult(new { success = false, message = "Not authorized" });
+            }
+
+            TemplateAccess ta = template.TemplateAccessList.FirstOrDefault(x => x.UserId == userAccess.UserId);
+            template.TemplateAccessList.Remove(ta);
+            _dbContext.SaveChangesAsync();
+
+            
+            return new JsonResult(new { success = true, message = "User added" });
+        }
+
+        public async Task<JsonResult> OnPostChangePrivacy(bool isPublic, int templateId)
+        {
+            Console.WriteLine("on change privacey: " + isPublic + ". for: " + templateId);
+            if (!ModelState.IsValid)
+            {
+                return new JsonResult(new { success = false, message = "Data violation" });
+            }
+            Template template = _templateService.GetTemplateById(templateId);
+            if (!_templateService.IsAuthorized(User, template))
+            {
+                return new JsonResult(new { success = false, message = "Not authorized" });
+            }
+
+            template.IsPublic = isPublic;
+            _dbContext.SaveChanges();            
             return new JsonResult(new { success = true, message = "User added" });
         }
         #endregion
-
     }
 }

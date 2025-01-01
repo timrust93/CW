@@ -71,11 +71,11 @@
                                 }
                                 <div id="tummprui" @makePrivateHidden>
                                     <p>This template is public</p>
-                                    <button class="btn btn-primary">Make Private</button>
+                                    <button class="btn btn-primary" onclick="onSetPrivacy(false)">Make Private</button>
                                 </div>
                                 <div id="tummpuui" @makePublicHidden>
                                     <p>This template is private</p>
-                                    <button class="btn btn-primary">Make Public</button>
+                                    <button class="btn btn-primary" onclick="onSetPrivacy(true)">Make Public</button>
                                 </div>
                             </div>
                             @{string hidden = Model.Template.IsPublic ? "hidden" : "";}
@@ -187,7 +187,8 @@
         var changeOrderLink = "@Html.Raw(changeOrderLink)";
         var deleteQuestionLink = "@Html.Raw(deleteQuestionLink)";
         var saveQuestionLink = "@Html.Raw(saveQuestionLink)";
-        var antiForgeryKey = "@Html.Raw(antiForgeryKey)";        
+        var antiForgeryKey = "@Html.Raw(antiForgeryKey)";
+        var templateId = "@Html.Raw(Model.Template.Id)";
 
         
         $(document).ready(function () {

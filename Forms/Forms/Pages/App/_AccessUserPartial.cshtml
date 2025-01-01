@@ -1,11 +1,12 @@
 ﻿@using topNamespace = Forms;
+@using System.Text.Json;
 @model topNamespace.Model.UserAccessPOCO
 
 @{
 }
 
 
-<div class="border border-primary mb-1" data="">
+<div class="border border-primary mb-1" data="@Model.Email" data-id="@Model.UserId">
     <span style="margin-left:6px; font-size:13px">@Model.Email</span>
     <button class="btn btn-danger btn-sm m-2" onclick="onDeleteFromTemplate(this)">X</button>
 </div>

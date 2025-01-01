@@ -7,9 +7,10 @@ searchInput.addEventListener("input", () => {
     clearTimeout(timeout);
     timeout = setTimeout(() => {
         const query = searchInput.value.trim();
+        console.log("search for: " + templateId);
 
         if (query.length > 0) {
-            fetch(`SearchTest?handler=SearchUsers&query=${encodeURIComponent(query)}`)
+            fetch(`TemplateManagement?handler=SearchUsers&query=${encodeURIComponent(query)}&templateId=${templateId}`)
                 .then((response) => response.json())
                 .then((data) => {
                     resultsUl.innerHTML = "";
@@ -25,7 +26,7 @@ searchInput.addEventListener("input", () => {
                             let li = document.createElement("li");
                             li.innerText = user.email;
                             li.classList.add("searchResLine");
-                            const email = user.email;
+                            const email = user.email;                            
                             const regex = new RegExp(`(${query})`, "i"); // Case-insensitive match
                             const highlightedEmail = email.replace(regex, `<span style="background-color: yellow;">$1</span>`);
                             li.innerHTML = highlightedEmail; // Use innerHTML to apply the highlighted HTML
@@ -46,22 +47,27 @@ searchInput.addEventListener("input", () => {
 function addUserToTemplate(user) {
     const userResultsDiv = document.getElementById('userResultsCont');
     userResultsDiv.setAttribute("hidden", true);
-    //return;
 
-    fetch(`SearchTest?handler=AddUserToTemplate`, {
+    fetch(`TemplateManagement?handler=AddUserToTemplate&templateId=${templateId}`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ templateId: 2, "userId": user.id }),
-    }).then((response) => {
-        if (response.ok) {
-            addUserToUI(user);
-            alert("User added!");
-        }
-    });
+        headers: getAjaxHeaders(),
+        body: JSON.stringify(user),
+    }).then(response => response.json())
+        .then(data => {
+            console.log(JSON.stringify(data));
+            if (data.success) {
+                addUserToUI(user);                
+            }
+            else {
+                alert(data.message);
+            }
+        })
+        .catch(error => {
+            alert('Something went wrong');
+        });
 }
 
 function addUserToUI(user) {
-    console.log("add user to ui: " + JSON.stringify(user));
     let template = document.getElementById("uatempl");
     let clone = document.importNode(template.content, true);
 
@@ -69,7 +75,8 @@ function addUserToUI(user) {
     span.innerText = user.email;
 
     let mainDiv = clone.querySelector("div");
-    mainDiv.setAttribute('data', user.id);
+    mainDiv.setAttribute('data', user.email);
+    mainDiv.setAttribute('data-id', user.userId);
 
     let list = document.getElementById("listUWCMT");
     list.appendChild(clone);
@@ -81,14 +88,14 @@ function addUserToUI(user) {
 function onDeleteFromTemplate(target) {
     let list = document.getElementById("listUWCMT");
     let element = target.closest("div");
-    let data = element.getAttribute("data");
-    //console.log("data: " + data);
+    let email = element.getAttribute("data");
+    let id = element.getAttribute("data-id");
 
-    let link = `SearchTest?handler=DeleteUserFromTemplate`
+    let link = `TemplateManagement?handler=DeleteUserFromTemplate&templateId=${templateId}`;
     fetch(link, {
         method: 'POST',
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ templateId: 2, "userId": data })
+        headers: getAjaxHeaders(),
+        body: JSON.stringify({ userId: id, email: email })
     }).then(response => response.json())
         .then(data => {
             if (data.success) {
@@ -102,4 +109,42 @@ function onDeleteFromTemplate(target) {
         .catch(error => {
             alert('Something went wrong');
         });
+}
+
+function onSetPrivacy(isPublic) {
+    let link = `TemplateManagement?handler=ChangePrivacy&isPublic=${isPublic}&templateId=${templateId}`
+    fetch(link, {
+        method: 'POST',
+        headers: getAjaxHeaders()
+    }).then(response => response.json())
+        .then(data => {
+            console.log(JSON.stringify(data));
+            if (data.success) {                
+                alert('privacy changed');
+                setPrivacyUIVisibility(isPublic);
+            }
+            else {
+                alert(data.message);
+            }
+        })
+        .catch(error => {
+            alert('Something went wrong');
+        });
+}
+
+function setPrivacyUIVisibility(isPublic) {
+    let makePublicUI = document.getElementById('tummpuui');
+    let makePrivateUI = document.getElementById('tummprui');
+    let privacyUI = document.getElementById('tumui');
+
+    if (isPublic) {        
+        makePublicUI.setAttribute("hidden", true);
+        makePrivateUI.removeAttribute("hidden");
+        privacyUI.setAttribute("hidden", true);
+    }
+    else {
+        makePublicUI.removeAttribute("hidden");
+        privacyUI.removeAttribute("hidden");
+        makePrivateUI.setAttribute("hidden", true);
+    }
 }

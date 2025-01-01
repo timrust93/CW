@@ -29,6 +29,7 @@ namespace Forms.Services
         public Template GetTemplateById(int id)
         {
             Template? template = _appDbContext.Templates.Include(t => t.QuestionList)
+                .Include(t => t.TemplateAccessList)
                 .FirstOrDefault(x => x.Id == id);
             return template;
         }
