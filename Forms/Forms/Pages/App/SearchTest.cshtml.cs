@@ -40,16 +40,13 @@ namespace Forms.Pages.App
         }
 
         public async Task<IActionResult> OnGetSearchUsers(string query)
-        {
-            //Console.WriteLine("get search users");
+        {            
             var users = await _appDbContext.Users
                 .Where(u => u.Email.Contains(query)).OrderBy(x => x.Email)
                 .Take(10) // Limit the results
                 .Select(u => new { u.Id, u.Email })
                 .ToListAsync();
 
-            string json = users.ToJson();
-            //Console.WriteLine(users.ToJson());
             return new JsonResult(users);
         }
 

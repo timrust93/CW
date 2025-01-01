@@ -63,20 +63,23 @@
                         </div>
                         <div>
                             <div>
-                                @if(Model.Template.IsPublic)
-                                {
+                                @{
+                                    string makePrivateHidden = Model.Template.IsPublic ? "" : "hidden";
+                                }
+                                @{
+                                    string makePublicHidden = Model.Template.IsPublic ? "hidden" : "";
+                                }
+                                <div id="tummprui" @makePrivateHidden>
                                     <p>This template is public</p>
                                     <button class="btn btn-primary">Make Private</button>
-                                }
-                                else
-                                {
+                                </div>
+                                <div id="tummpuui" @makePublicHidden>
                                     <p>This template is private</p>
                                     <button class="btn btn-primary">Make Public</button>
-                                }
+                                </div>
                             </div>
-                            
-                            @if(!Model.Template.IsPublic)
-                            {
+                            @{string hidden = Model.Template.IsPublic ? "hidden" : "";}
+                            <div id="tumui" @hidden>
                                 <br />
                                 <br />
                                 <div class="border">
@@ -98,7 +101,7 @@
                                 <div id="userResultsCont" class="border" hidden>
                                     <ul id="userResults" style="list-style-type:none"></ul>
                                 </div>
-                            }                            
+                            </div>                      
                         </div>
                     </div>
                 </div>

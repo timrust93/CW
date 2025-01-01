@@ -12,6 +12,7 @@ using NuGet.Protocol;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using static Forms.Pages.App.CreateTemplateModel;
+using Microsoft.EntityFrameworkCore;
 
 namespace Forms.Pages.App
 {
@@ -216,6 +217,30 @@ namespace Forms.Pages.App
                 });
                 Console.WriteLine("user: " + user);
             }
+        }
+
+        public async Task<JsonResult> OnGetSearchUsers(string query)
+        {
+            var users = await _dbContext.Users
+                .Where(u => u.Email.Contains(query)).OrderBy(x => x.Email)
+                .Take(10) // Limit the results
+                .Select(u => new { u.Id, u.Email })
+                .ToListAsync();
+
+            return new JsonResult(users);
+        }
+
+        public async Task<JsonResult> OnPostAddUserToTemplate([FromBody] UserAccessPOCO userAccess)
+        {
+            //Console.WriteLine("trying to add");
+            Console.WriteLine("json: " + userAccess.ToJson());
+            return new JsonResult(new { success = true, message = "User added" });
+        }
+
+        public async Task<JsonResult> OnPostDeleteUserFromTemplate([FromBody] UserAccessPOCO userAccess)
+        {
+            Console.WriteLine("json delete: " + userAccess.ToJson());
+            return new JsonResult(new { success = true, message = "User added" });
         }
         #endregion
 
