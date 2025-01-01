@@ -22,6 +22,13 @@ builder.Services.AddScoped<TemplateService>();
 builder.Services.AddScoped<FormsService>();
 builder.Services.AddAntiforgery(o => o.HeaderName = AuthHelper.ANTI_FORGERY);
 
+
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/Identity/Account/Login";
+    options.AccessDeniedPath = "/Identity/Account/AccessDenied";
+});
+
 builder.Services.AddLogging(logging =>
 {
     logging.AddFilter("Microsoft.EntityFrameworkCore", LogLevel.Warning);

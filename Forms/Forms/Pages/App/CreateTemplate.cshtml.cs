@@ -57,11 +57,8 @@ namespace Forms.Pages.App
 
                 _templateService.AddNewTemplate(template);                
 
-                return RedirectToPage("PersonalPage");
-                //return RedirectToPage("TemplateManagement");
-                //return Redirect("PersonalPage");                
-            }
-            
+                return RedirectToPage("PersonalPage");           
+            }            
         }
     }
 }

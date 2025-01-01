@@ -50,16 +50,6 @@ namespace Forms.Pages.App
             CreateDisplayData();
         }
 
-        public IActionResult OnPostDeleteTemplate(int id)
-        {
-            string userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            Template template = _templateService.GetTemplateById(id);
-            if (!_templateService.IsAuthorized(User, template))
-            {
-                return RedirectToPage("/Index");
-            }
-            return Page();
-        }
 
         public JsonResult OnPostDelete(int id)
         {
