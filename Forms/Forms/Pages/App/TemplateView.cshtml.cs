@@ -38,6 +38,7 @@ namespace Forms.Pages.App
             }
             
             Questions = Template.QuestionList.ToList();
+            Questions.Sort((x, y) => x.OrderIndex.CompareTo(y.OrderIndex));
             return Page();
             
         }
