@@ -9,6 +9,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Runtime.CompilerServices;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Authorization;
+using System.Data;
 
 namespace Forms.Pages.App
 {
@@ -98,6 +99,7 @@ namespace Forms.Pages.App
                 answerPOCO.QuestionType = question.Type;
                 Answers.Add(CopyAnswerValues(answer, answerPOCO));
             }
+            FormDownloadTime = DateTime.Now;
             return Page();
         }
 
